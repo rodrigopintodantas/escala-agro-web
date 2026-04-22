@@ -74,12 +74,14 @@ export interface PermutaListagem {
         id: number;
         dataReferencia: string;
         usuarioId: number;
+        observacao?: string | null;
         usuario?: { id: number; nome: string; login: string };
     } | null;
     plantaoDestino?: {
         id: number;
         dataReferencia: string;
         usuarioId: number;
+        observacao?: string | null;
         usuario?: { id: number; nome: string; login: string };
     } | null;
 }

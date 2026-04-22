@@ -118,6 +118,10 @@ export class PermutasListaComponent implements OnInit {
         }
         const d = new Date(p.dataReferencia + 'T12:00:00');
         const dataTxt = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const obs = p.observacao?.trim();
+        if (obs && obs.startsWith('Gestão - Atestado médico')) {
+            return `${dataTxt} — ${obs}`;
+        }
         const nome = p.usuario?.nome?.trim() || '—';
         const login = p.usuario?.login ? ` (${p.usuario.login})` : '';
         return `${dataTxt} — ${nome}${login}`;

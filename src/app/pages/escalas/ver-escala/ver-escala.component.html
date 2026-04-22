@@ -14,7 +14,7 @@
             <div>
                 <div class="text-sm text-color-secondary mb-1">Seu plantão</div>
                 <div class="font-semibold">{{ formatarDataCompleta(plantaoPermutaOrigem.dataReferencia) }}</div>
-                <div class="text-sm text-color-secondary">{{ plantaoPermutaOrigem.usuario?.nome }} · {{ plantaoPermutaOrigem.usuario?.login }}</div>
+                <div class="text-sm text-color-secondary">{{ rotuloExibicaoPlantao(plantaoPermutaOrigem) }}</div>
             </div>
             <div class="flex flex-col gap-2">
                 <label for="destinoPermuta" class="font-medium">Plantão para permutar *</label>
@@ -148,7 +148,7 @@
                         </div>
                         <div>
                             <div class="font-semibold text-lg">{{ formatarDataCompleta(p.dataReferencia) }}</div>
-                            <div class="text-color-secondary text-sm">{{ p.usuario?.nome }} · {{ p.usuario?.login }}</div>
+                            <div class="text-color-secondary text-sm">{{ rotuloExibicaoPlantao(p) }}</div>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">

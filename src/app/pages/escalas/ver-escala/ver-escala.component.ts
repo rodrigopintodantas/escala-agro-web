@@ -327,6 +327,17 @@ export class VerEscalaComponent implements OnInit {
         return Number.isNaN(n) ? null : n;
     }
 
+    /** Alinhado ao texto gravado em `plantao.observacao` no recálculo por atestado. */
+    rotuloExibicaoPlantao(p: PlantaoDetalhe): string {
+        const obs = p.observacao?.trim();
+        if (obs && obs.startsWith('Gestão - Atestado médico')) {
+            return obs;
+        }
+        const nome = p.usuario?.nome?.trim() || '—';
+        const login = p.usuario?.login?.trim();
+        return login ? `${nome} · ${login}` : nome;
+    }
+
     private idUsuarioDoPlantaoNumero(p: PlantaoDetalhe): number | null {
         const row = p as unknown as Record<string, unknown>;
         const raw = row['usuarioId'] ?? row['usuario_id'] ?? row['UsuarioModelId'] ?? p.usuario?.id;
@@ -414,9 +425,8 @@ export class VerEscalaComponent implements OnInit {
     private rotuloOpcaoPlantaoPermuta(p: PlantaoDetalhe): string {
         const d = new Date(p.dataReferencia + 'T12:00:00');
         const dataTxt = d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
-        const nome = p.usuario?.nome?.trim() || 'Veterinário';
-        const login = p.usuario?.login ? ` (${p.usuario.login})` : '';
-        return `${dataTxt} — ${nome}${login}`;
+        const rotulo = this.rotuloExibicaoPlantao(p);
+        return `${dataTxt} — ${rotulo}`;
     }
 
     fecharDialogPermuta(): void {
