@@ -1,0 +1,18 @@
+environment: production
+
+fqdn: escala-agro.tjdft.jus.br
+
+extraRouteLabels:
+    intranet: 'true'
+env:
+    apiUrl: http://escala-agro.tjdft.jus.br/api
+    baseUrl: http://escala-agro.tjdft.jus.br/
+    production: 'true'
+
+resources:
+    limits:
+        cpu: 512Mi
+        memory: 1Gi
+    requests:
+        cpu: 256Mi
+        memory: 512Mi

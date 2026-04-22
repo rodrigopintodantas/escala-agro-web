@@ -1,0 +1,122 @@
+<p-card header="{{ page.titulo }}">
+    <p-toolbar styleClass="mb-4">
+        <ng-template pTemplate="left"> </ng-template>
+        <ng-template pTemplate="center">
+            <i class="pi pi-search mr-2"></i>
+            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" [placeholder]="constantes.searchPlaceholder" class="w-full sm:w-auto mr-2" />
+        </ng-template>
+
+        <ng-template pTemplate="right">
+            <div class="my-2">
+                <button pButton pRipple label="Novo Usuário" icon="pi pi-plus" class="p-button-success mr-2"
+                        (click)="openNew()"></button>
+            </div>
+        </ng-template>
+    </p-toolbar>
+
+    <p-table
+        #dt
+        [value]="itens"
+        [columns]="cols"
+        responsiveLayout="scroll"
+        [globalFilterFields]="globalFilters"
+        [rows]="constantes.rows"
+        [paginator]="true"
+        [rowsPerPageOptions]="constantes.rowsPerPageOptions"
+        [showCurrentPageReport]="true"
+        [currentPageReportTemplate]="constantes.showingEntries"
+        [(selection)]="selectedItens"
+        selectionMode="multiple"
+        [rowHover]="true"
+        dataKey="id"
+    >
+        <ng-template pTemplate="header">
+            <tr>
+                <th style="width: 3rem">
+                    <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                </th>
+                <th *ngFor="let col of cols" pSortableColumn="{{ col.field }}">{{ col.header }} <p-sortIcon field="{{ col.field }}"></p-sortIcon></th>
+                <th></th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+            <tr>
+                <td>
+                    <p-tableCheckbox [value]="item"></p-tableCheckbox>
+                </td>
+                <td>{{ item.nome }}</td>
+                <td>{{ item.login }}</td>
+                <td>{{ item.email }}</td>
+                <td>{{ item.cargo }}</td>
+                <td>{{ item.telefone }}</td>
+                <td>
+                    <div *ngIf="item.UsuarioPapelModels && item.UsuarioPapelModels.length > 0" class="flex flex-wrap gap-1">
+                        <p-tag *ngFor="let usuarioPapel of item.UsuarioPapelModels; let i = index"
+                               class="mr-2 mb-1"
+                               [severity]="getTagSeverity(i)"
+                               [value]="usuarioPapel.PapelModel?.nome || 'Papel'">
+                        </p-tag>
+                    </div>
+                    <div *ngIf="!item.UsuarioPapelModels || item.UsuarioPapelModels.length === 0">
+                        <span class="text-muted text-sm">Sem papéis</span>
+                    </div>
+                </td>
+                <td>
+                    <span [class]="item.ativo ? 'p-badge p-badge-success' : 'p-badge p-badge-danger'">
+                        {{ item.ativo ? 'Ativo' : 'Bloqueado' }}
+                    </span>
+                </td>
+
+                <td>
+                    <div class="flex">
+                        <!-- <button pButton pRipple icon="pi pi-search" class="p-button-rounded p-button-info mr-2"
+                                (click)="verDetalhe(item)" title="Ver detalhes"></button> -->
+                        <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
+                                (click)="editarUsuario(item)" title="Editar usuário"></button>
+                        <button pButton pRipple *ngIf="item.ativo" icon="pi pi-lock"
+                                class="p-button-rounded p-button-warning mr-2"
+                                (click)="bloquearUsuario(item)" title="Bloquear usuário"></button>
+                        <button pButton pRipple *ngIf="!item.ativo" icon="pi pi-unlock"
+                                class="p-button-rounded p-button-secondary mr-2"
+                                (click)="desbloquearUsuario(item)" title="Desbloquear usuário"></button>
+                        <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger"
+                                (click)="excluirUsuario(item)" title="Excluir usuário"></button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+
+        <!-- Mensagem quando não há dados -->
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="9" class="text-center p-4">
+                    <p>Nenhum usuário encontrado.</p>
+                    <p>Total de itens: {{ itens.length || 0 }}</p>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</p-card>
+
+<!-- Dialog para Novo Usuário -->
+<app-usuario-dialog
+    [visible]="dialogVisible"
+    [tituloCadastro]="dialogTitulo"
+    [modoEdicao]="modoEdicao"
+    [usuarioParaEditar]="usuarioParaEditar"
+    (onHide)="hideDialog()"
+    (onSave)="saveUsuario($event)">
+</app-usuario-dialog>
+
+<!-- Dialog de confirmação de exclusão -->
+<app-delete-dialog
+    [visible]="deleteDialogVisible"
+    [header]="deleteDialogHeader"
+    [message]="deleteDialogMessage"
+    [item]="usuarioParaExcluir"
+    (onCancel)="fecharDeleteDialog()"
+    (onConfirm)="confirmarExclusao()">
+</app-delete-dialog>
+
+<!-- Toast para mensagens -->
+<p-toast></p-toast>

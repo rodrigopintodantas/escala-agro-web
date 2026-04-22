@@ -1,0 +1,11 @@
+<p-dialog [(visible)]="visible" [header]="header" [modal]="true" [style]="{width:'450px'}">
+  <div class="flex align-items-center justify-content-center">
+    <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem; color: #f44336;"></i>
+    <span>{{ message }}</span>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar"
+      (click)="cancelar()"></button>
+    <button pButton pRipple icon="pi pi-check" label="Confirmar" class="p-button-danger" (click)="confirmDeleteSelected()"></button>
+  </ng-template>
+</p-dialog>

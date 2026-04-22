@@ -1,0 +1,41 @@
+replicaCount: 1
+
+global:
+    timezone: America/Sao_Paulo
+    commitSha: DEFAULT_SHA
+
+image:
+    # Deploy da imagem no gitlab variaveis precisam ser criadas no gitlab
+    fullRepositoryPath: # Ex.: registry-gitlab.tjdft.jus.br/docker-images/pgbackup-job ($IMAGE_FULL_REPOSITORY_PATH)
+    credentials: # preenchidas pela pipeline para rodar script
+        registry: # registry-gitlab.tjdft.jus.br ($CI_REGISTRY)
+        username: # NOME=gitlab-deploy-token e scope=read_registry ($CI_DEPLOY_USER)
+        password: # NOME=gitlab-deploy-token e scope=read_registry ($CI_DEPLOY_PASSWORD)
+imagePullPolicy: Always
+
+kubernetesClusterDomain: cluster.local
+
+podAnnotations: {}
+
+podLabels: {}
+
+podSecurityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    fsGroup: 1000
+
+containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+        drop:
+            - ALL
+    runAsNonRoot: true
+    seccompProfile:
+        type: RuntimeDefault
+
+ports:
+    - name: 8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080

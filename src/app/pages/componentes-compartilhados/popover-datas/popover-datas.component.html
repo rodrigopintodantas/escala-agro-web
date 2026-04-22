@@ -1,0 +1,23 @@
+<!-- popover -->
+<p-popover #op>
+    <ng-template #content>
+        <div *ngIf="loading">Carregando dados...</div>
+
+        <div *ngIf="!loading && dados">
+            <span class="font-medium block mb-2">Dia(s) do Plantão</span>
+            <ul class="list-none p-0 m-0 flex flex-col">
+                <li *ngFor="let data of dados" class="flex items-center gap-1 px-1 py-1 hover:bg-emphasis cursor-pointer rounded-border">
+                    <div>
+                        <p-tag icon="pi pi-calendar"> {{ data | date: 'dd/MM/yyyy' }}</p-tag>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div *ngIf="!loading && error">
+            <p style="color: red">Erro ao carregar dados.</p>
+        </div>
+    </ng-template>
+</p-popover>
+
+<!-- botão que abre/fecha -->
+<p-button class="ms-1" severity="secondary" icon="pi pi-calendar" (click)="togglePopover($event, op)" [label]="getTotalDePlantoes()" />

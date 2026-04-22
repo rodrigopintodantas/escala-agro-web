@@ -1,0 +1,21 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ include "escala-agro-web.fullname" . }}-route
+  labels:
+  {{- include "escala-agro-web.labels" . | nindent 4 }}
+  {{- with .Values.extraRouteLabels -}}
+  {{-   toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  host: {{ .Values.fqdn }}
+  port:
+    targetPort: 8080-tcp
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: edge
+  to:
+    kind: Service
+    name: {{ include "escala-agro-web.fullname" . }}-service
+    weight: 100
+  wildcardPolicy: None

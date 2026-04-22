@@ -1,0 +1,114 @@
+<p-toast />
+<div class="p-4 max-w-5xl mx-auto">
+    <div class="flex items-center gap-3 mb-4">
+        <button pButton type="button" icon="pi pi-arrow-left" class="p-button-text" routerLink="/admin/escalas" label="Voltar"></button>
+        <h1 class="text-2xl font-semibold m-0">Nova escala</h1>
+    </div>
+
+    <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-2">
+            <label for="nome">Nome da escala *</label>
+            <input pInputText id="nome" [(ngModel)]="nome" class="w-full" placeholder="Ex.: Plantão campo norte — 1º semestre" />
+        </div>
+
+        <div class="flex flex-col gap-2">
+            <label for="desc">Descrição</label>
+            <textarea pTextarea id="desc" [(ngModel)]="descricao" rows="3" class="w-full" placeholder="Objetivo do período, observações..."></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-2">
+                <label>Mês inicial *</label>
+                <p-calendar
+                    [(ngModel)]="mesInicio"
+                    view="month"
+                    dateFormat="mm/yy"
+                    [showIcon]="true"
+                    styleClass="w-full"
+                    appendTo="body"
+                    [readonlyInput]="true"
+                    (onSelect)="onMesInicioSelecionado()"
+                ></p-calendar>
+            </div>
+            <div class="flex flex-col gap-2">
+                <label>Mês final *</label>
+                <p-calendar
+                    [(ngModel)]="mesFim"
+                    view="month"
+                    dateFormat="mm/yy"
+                    [showIcon]="true"
+                    styleClass="w-full"
+                    appendTo="body"
+                    [readonlyInput]="true"
+                    (onSelect)="onMesFimSelecionado()"
+                ></p-calendar>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-2">
+                <label>Data inicial (calculada)</label>
+                <p-calendar
+                    [(ngModel)]="dataInicio"
+                    dateFormat="dd/mm/yy"
+                    [showIcon]="true"
+                    styleClass="w-full"
+                    appendTo="body"
+                    [readonlyInput]="true"
+                    [disabled]="true"
+                ></p-calendar>
+            </div>
+            <div class="flex flex-col gap-2">
+                <label>Data final (calculada)</label>
+                <p-calendar
+                    [(ngModel)]="dataFim"
+                    dateFormat="dd/mm/yy"
+                    [showIcon]="true"
+                    styleClass="w-full"
+                    appendTo="body"
+                    [readonlyInput]="true"
+                    [disabled]="true"
+                ></p-calendar>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+            <label>Periodicidade *</label>
+            <p class="text-sm text-color-secondary m-0">
+                Os plantões previstos incluem automaticamente <strong>sábados e domingos</strong> entre a data inicial e a final. Use o campo abaixo para incluir
+                outras datas no rodízio (feriados, coberturas em dias úteis, etc.).
+            </p>
+            <p-dropdown
+                [options]="opcoesPeriodicidade"
+                optionLabel="label"
+                optionValue="value"
+                [(ngModel)]="periodicidade"
+                placeholder="Selecione"
+                styleClass="w-full md:w-96"
+                [disabled]="true"
+            ></p-dropdown>
+        </div>
+
+        <div class="flex flex-col gap-2">
+            <label>Datas adicionais de plantão</label>
+            <p class="text-sm text-color-secondary m-0">Opcional. Selecione uma ou mais datas que também devem entrar no rodízio, na ordem cronológica junto com os fins de semana.</p>
+            <p-calendar
+                #extrasCal
+                [(ngModel)]="datasPlantaoExtras"
+                selectionMode="multiple"
+                dateFormat="dd/mm/yy"
+                [showIcon]="true"
+                styleClass="w-full"
+                appendTo="body"
+                [baseZIndex]="1200"
+                (onShow)="repositionarCalendarioExtras()"
+                placeholder="Clique para escolher datas"
+            ></p-calendar>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+            <button pButton type="button" label="Salvar" icon="pi pi-check" (click)="salvar()" [loading]="salvando"></button>
+            <button pButton type="button" label="Cancelar" class="p-button-secondary" routerLink="/admin/escalas"></button>
+        </div>
+    </div>
+</div>

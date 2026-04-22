@@ -1,0 +1,268 @@
+<p-toast />
+<p-confirmdialog />
+<div class="p-4">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h1 class="text-2xl font-semibold m-0">Escalas de plantão</h1>
+        <button
+            *ngIf="modoEscalas === 'admin'"
+            pButton
+            pRipple
+            type="button"
+            icon="pi pi-plus"
+            class="p-button-rounded"
+            pTooltip="Nova escala"
+            tooltipPosition="bottom"
+            [routerLink]="[prefixoArea, 'escalas', 'criar']"
+        ></button>
+    </div>
+
+    <p-table [value]="escalas" [loading]="carregando" [paginator]="true" [rows]="10" responsiveLayout="scroll">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Nome</th>
+                <th>Início</th>
+                <th>Fim</th>
+                <th>Periodicidade</th>
+                <th>Modo ordem</th>
+                <th>Status</th>
+                <th [style.width]="modoEscalas === 'admin' ? '17rem' : '5rem'">Ações</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-row>
+            <tr>
+                <td>{{ row.nome }}</td>
+                <td>{{ row.dataInicio | date : 'dd/MM/yyyy' }}</td>
+                <td>{{ row.dataFim | date : 'dd/MM/yyyy' }}</td>
+                <td>{{ labelPeriodicidade(row.periodicidade) }}</td>
+                <td>{{ row.modoOrdemInicial }}</td>
+                <td>
+                    <p-tag [value]="labelStatusEscala(row.status)" [severity]="severityStatus(row.status)" />
+                </td>
+                <td>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button
+                            pButton
+                            pRipple
+                            type="button"
+                            icon="pi pi-eye"
+                            class="p-button-rounded p-button-sm"
+                            pTooltip="Ver escala"
+                            tooltipPosition="top"
+                            [routerLink]="[prefixoArea, 'escalas', row.id]"
+                        ></button>
+                        <ng-container *ngIf="modoEscalas === 'admin'">
+                            <button
+                                pButton
+                                pRipple
+                                type="button"
+                                icon="pi pi-pencil"
+                                class="p-button-rounded p-button-sm"
+                                pTooltip="Feriados e datas adicionais de plantão"
+                                tooltipPosition="top"
+                                (click)="abrirEditarDatasExtras(row)"
+                                [loading]="carregandoDetalheEscalaId === row.id"
+                                [disabled]="carregandoDetalheEscalaId !== null"
+                            ></button>
+                            <button
+                                pButton
+                                pRipple
+                                type="button"
+                                icon="pi pi-trash"
+                                severity="danger"
+                                class="p-button-rounded p-button-sm"
+                                pTooltip="Excluir escala"
+                                tooltipPosition="top"
+                                (click)="confirmarExcluir(row)"
+                                [loading]="excluindoId === row.id"
+                            ></button>
+                            <button
+                                *ngIf="podeExibirBotaoAtivar(row)"
+                                pButton
+                                pRipple
+                                type="button"
+                                icon="pi pi-check-circle"
+                                class="p-button-rounded p-button-sm"
+                                pTooltip="Ativar Escala — altera o status para ativa"
+                                tooltipPosition="top"
+                                (click)="ativarEscala(row)"
+                                [loading]="ativandoEscalaId === row.id"
+                                [disabled]="acaoOutraEscalaEmAndamento(row.id)"
+                            ></button>
+                            <button
+                                *ngIf="podeExibirBotaoConcluir(row)"
+                                pButton
+                                pRipple
+                                type="button"
+                                icon="pi pi-flag"
+                                class="p-button-rounded p-button-sm"
+                                pTooltip="Concluir escala — status Concluída e atualização da ordem global"
+                                tooltipPosition="top"
+                                (click)="confirmarConcluirEscala(row)"
+                                [loading]="concluindoEscalaId === row.id"
+                                [disabled]="acaoOutraEscalaEmAndamento(row.id)"
+                            ></button>
+                        </ng-container>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="7" class="text-center p-4">Nenhuma escala cadastrada.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<p-dialog
+    *ngIf="modoEscalas === 'admin'"
+    [(visible)]="dialogEditarExtrasAberto"
+    header="Datas extras na escala"
+    [modal]="true"
+    [closable]="true"
+    [draggable]="false"
+    [focusTrap]="false"
+    [style]="{ width: 'min(32rem, 96vw)' }"
+    [contentStyle]="{ 'padding-top': '0' }"
+    (onHide)="fecharDialogEditarExtras()"
+>
+    <ng-template pTemplate="content">
+        <div class="flex flex-col gap-5 pt-2" *ngIf="escalaEditarExtras as esc">
+            <div class="flex flex-col gap-1 pb-1 border-b border-surface-200 dark:border-surface-700">
+                <span class="text-lg font-semibold text-surface-900 dark:text-surface-0 leading-tight">{{ esc.nome }}</span>
+                <p class="text-sm text-color-secondary m-0">
+                    Período: <strong>{{ esc.dataInicio | date : 'dd/MM/yyyy' }}</strong> a
+                    <strong>{{ esc.dataFim | date : 'dd/MM/yyyy' }}</strong>
+                </p>
+            </div>
+
+            <!-- Remover -->
+            <section
+                class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 shadow-sm p-4 flex flex-col gap-3"
+            >
+                <div class="flex items-start gap-3">
+                    <span
+                        class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-500/12 text-red-600 dark:text-red-400"
+                    >
+                        <i class="pi pi-minus-circle text-xl"></i>
+                    </span>
+                    <div class="flex flex-col gap-0.5 min-w-0">
+                        <span class="font-semibold text-surface-900 dark:text-surface-0">Remover plantão</span>
+                        <span class="text-xs text-color-secondary">Feriado ou ponto facultativo (dia que não é sábado nem domingo)</span>
+                    </div>
+                </div>
+                <p class="text-sm text-color-secondary m-0">
+                    Selecione <strong>uma data</strong> e confirme. O rodízio é recalculado <strong>a partir</strong> dessa data; datas anteriores não são regravadas.
+                </p>
+                <ng-container *ngIf="feriadosCadastrados.length; else semFeriadosRemover">
+                    <label for="dd-remover-feriado" class="font-medium text-sm">Data cadastrada</label>
+                    <p-dropdown
+                        inputId="dd-remover-feriado"
+                        [options]="opcoesDropdownFeriadosRemover()"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Escolha a data a remover..."
+                        [(ngModel)]="plantaoSelecionadoParaRemocao"
+                        [showClear]="true"
+                        styleClass="w-full"
+                        appendTo="body"
+                        [disabled]="bloqueadoDialogExtras"
+                    ></p-dropdown>
+                    <button
+                        pButton
+                        pRipple
+                        type="button"
+                        label="Remover esta data"
+                        icon="pi pi-trash"
+                        severity="danger"
+                        [outlined]="true"
+                        class="w-full sm:w-auto"
+                        (click)="confirmarRemoverFeriadoSelecionado()"
+                        [loading]="removerFeriadoCarregandoId !== null"
+                        [disabled]="
+                            bloqueadoDialogExtras ||
+                            plantaoSelecionadoParaRemocao == null ||
+                            !feriadosCadastrados.length
+                        "
+                    ></button>
+                </ng-container>
+                <ng-template #semFeriadosRemover>
+                    <p class="text-sm text-color-secondary m-0 italic border border-dashed border-surface-300 dark:border-surface-600 rounded-lg p-3">
+                        Não há feriados ou pontos facultativos cadastrados — apenas sábados e domingos no período.
+                    </p>
+                </ng-template>
+            </section>
+
+            <div class="flex items-center gap-3 text-color-secondary text-xs select-none">
+                <span class="h-px flex-1 bg-surface-200 dark:bg-surface-600"></span>
+                <span>ou</span>
+                <span class="h-px flex-1 bg-surface-200 dark:bg-surface-600"></span>
+            </div>
+
+            <!-- Adicionar -->
+            <section
+                class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 shadow-sm p-4 flex flex-col gap-3"
+            >
+                <div class="flex items-start gap-3">
+                    <span
+                        class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/12 text-primary"
+                    >
+                        <i class="pi pi-plus-circle text-xl"></i>
+                    </span>
+                    <div class="flex flex-col gap-0.5 min-w-0">
+                        <span class="font-semibold text-surface-900 dark:text-surface-0">Adicionar plantão</span>
+                        <span class="text-xs text-color-secondary">Incluir feriado ou ponto facultativo no rodízio</span>
+                    </div>
+                </div>
+                <p class="text-sm text-color-secondary m-0">
+                    Selecione <strong>uma data livre</strong> no período. Cada inclusão dispara o recálculo a partir dessa data.
+                </p>
+                <ng-container *ngIf="opcoesNovasDatasEscala.length; else semDatasLivres">
+                    <label for="dd-nova-data-extra" class="font-medium text-sm">Data livre no período</label>
+                    <p-dropdown
+                        inputId="dd-nova-data-extra"
+                        [options]="opcoesDropdownNovasDatas()"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Escolha a data a incluir..."
+                        [(ngModel)]="dataSelecionadaParaInclusao"
+                        [showClear]="true"
+                        styleClass="w-full"
+                        appendTo="body"
+                        [disabled]="bloqueadoDialogExtras"
+                    ></p-dropdown>
+                    <button
+                        pButton
+                        pRipple
+                        type="button"
+                        label="Adicionar esta data"
+                        icon="pi pi-plus"
+                        class="w-full sm:w-auto"
+                        (click)="adicionarDataExtraSelecionada()"
+                        [loading]="salvandoDatasExtras"
+                        [disabled]="
+                            bloqueadoDialogExtras ||
+                            !dataSelecionadaParaInclusao ||
+                            !opcoesNovasDatasEscala.length
+                        "
+                    ></button>
+                </ng-container>
+                <ng-template #semDatasLivres>
+                    <p class="text-sm text-color-secondary m-0 italic border border-dashed border-surface-300 dark:border-surface-600 rounded-lg p-3">
+                        Todas as datas do período já possuem plantão — não há datas livres para adicionar.
+                    </p>
+                </ng-template>
+            </section>
+        </div>
+    </ng-template>
+    <ng-template pTemplate="footer">
+        <button
+            pButton
+            type="button"
+            label="Fechar"
+            class="p-button-text"
+            (click)="fecharDialogEditarExtras()"
+            [disabled]="bloqueadoDialogExtras"
+        ></button>
+    </ng-template>
+</p-dialog>

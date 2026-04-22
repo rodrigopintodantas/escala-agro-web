@@ -1,0 +1,62 @@
+<p-table #dt [value]="items" [columns]="columns" responsiveLayout="scroll" [globalFilterFields]="globalFilters"
+    [rows]="rows" [paginator]="true" [rowsPerPageOptions]="rowsPerPageOptions"
+    [showCurrentPageReport]="showCurrentPageReport" [currentPageReportTemplate]="currentPageReportTemplate"
+    [(selection)]="selectedItems" selectionMode="multiple" [rowHover]="true" [dataKey]="dataKey"
+    (selectionChange)="selectionChange($event)">
+
+    <ng-template #caption>
+        <div class="flex">
+            <p-iconfield iconPosition="left" class="ml-auto">
+                <p-inputicon>
+                    <i class="pi pi-search"></i>
+                </p-inputicon>
+                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)"
+                    [placeholder]="constantes.searchPlaceholder" class="w-full sm:w-auto
+                    mr-2" />
+            </p-iconfield>
+            <button pButton pRipple [label]="constantes.exportLabel" icon="pi pi-download" class="ml-2 inline-block"
+                (click)="exportCSV()"></button>
+            <button pButton pRipple [label]="constantes.atualizarLabel" icon="pi pi-refresh" severity="contrast"
+                class=" ml-2 inline-block" (click)="refresh()"></button>
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="header">
+        <tr>
+            <th style="width: 3rem">
+                <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+            </th>
+            <th *ngFor="let col of columns" pSortableColumn="{{col.field}}">
+                {{ col.header }}
+                <i class="pi pi-question-circle ml-2 text-gray-500 cursor-pointer mr-2" pTooltip="{{ col.tooltip }}" tooltipPosition="top"></i>
+                <p-sortIcon field="{{col.field}}"></p-sortIcon>
+            </th>
+            <th></th>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+        <tr>
+            <td>
+                <p-tableCheckbox [value]="item"></p-tableCheckbox>
+            </td>
+            <td>{{ item.id }}</td>
+            <td>{{ item.referencia }}</td>
+            <td class="text-right">{{ item.valorArrecadado | currency: 'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
+            <td class="text-right">{{ item.valorEmolumentosLiquidos | currency: 'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
+            <td class="text-right">{{ item.valorFundoCompartilhado | currency: 'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
+            <td class="text-right">{{ item.valorOutrosRepasses | currency: 'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
+            <td class="text-right">{{ item.valorCusteio | currency: 'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
+            <td class="text-right">{{ item.Cartorio.nome }}</td>
+            <td class="text-right">{{ item.Responsavel.nome }}</td>
+            <td class="text-right"> {{ item.StatusMovimentacao.descricao }} </td>
+            <td>
+                <div class="flex" *ngIf="showEditButton || showDeleteButton">
+                    <button *ngIf="showEditButton" [disabled]="item.StatusMovimentacao.descricao == 'Enviada'" pButton pRipple icon="pi pi-pencil"
+                        class="p-button-rounded p-button-success mr-2" (click)="edit(item)"></button>
+                    <button *ngIf="showDeleteButton" [disabled]="item.StatusMovimentacao.descricao == 'Enviada'" pButton pRipple icon="pi pi-trash"
+                        class="p-button-rounded p-button-danger" (click)="delete(item)"></button>
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+</p-table>

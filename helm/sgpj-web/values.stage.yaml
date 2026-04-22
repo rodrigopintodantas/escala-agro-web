@@ -1,0 +1,19 @@
+environment: stage
+
+fqdn: escala-agro.apps.tjdft.jus.br
+
+extraRouteLabels:
+    intranet-stage: 'true'
+env:
+    apiUrl: http://escala-agro.apps.tjdft.jus.br/api
+    baseUrl: http://escala-agro.apps.tjdft.jus.br/
+    production: 'false'
+    ambiente: 'stage'
+
+resources:
+    limits:
+        cpu: 1 # equivalente = 1000m
+        memory: 2560Mi
+    requests:
+        cpu: 100m
+        memory: 256Mi

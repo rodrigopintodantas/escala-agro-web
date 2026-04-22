@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "escala-agro-web.fullname" . }}
+  labels:
+  {{- include "escala-agro-web.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+    {{- include "escala-agro-web.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+      {{- include "escala-agro-web.selectorLabels" . | nindent 8 }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+        commit-sha: {{ quote .Values.global.commitSha }}
+      {{- end }}
+    spec:
+      {{- if .Values.image.credentials }}
+      imagePullSecrets:
+        - name: {{ include "escala-agro-web.fullname" . }}-image-pull-credentials
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: {{ .Chart.Name }}
+        securityContext:
+          {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+        image: {{ required "Campo .image.fullRepositoryPath é obrigatório e não foi preenchido"
+              .Values.image.fullRepositoryPath }}:{{ .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        env:
+        - name: base_url
+          value: {{ quote .Values.env.baseUrl }}
+        - name: apiUrl
+          value: {{ quote .Values.env.apiUrl }}
+        - name: production
+          value: {{ quote .Values.env.production }}
+        - name: ambiente
+          value: {{ quote .Values.env.ambiente }}
+        ports:
+          - containerPort: 8080
+
+

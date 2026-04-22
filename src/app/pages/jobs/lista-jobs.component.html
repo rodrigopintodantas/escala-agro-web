@@ -1,0 +1,77 @@
+<p-card header="{{ page.titulo }}">
+    <p-toolbar styleClass="mb-4">
+        <ng-template pTemplate="center">
+            <i class="pi pi-search mr-2"></i>
+            <input
+                pInputText
+                type="text"
+                (input)="onGlobalFilter(dt, $event)"
+                [placeholder]="constantes.searchPlaceholder"
+                class="w-full sm:w-auto mr-2"
+            />
+        </ng-template>
+        <ng-template pTemplate="right">
+            <button pButton pRipple label="Atualizar" icon="pi pi-refresh" class="p-button-secondary" (click)="carregar()"></button>
+        </ng-template>
+    </p-toolbar>
+
+    <p-table
+        #dt
+        [value]="itens"
+        [columns]="cols"
+        responsiveLayout="scroll"
+        [globalFilterFields]="globalFilters"
+        [rows]="constantes.rows"
+        [paginator]="true"
+        [rowsPerPageOptions]="constantes.rowsPerPageOptions"
+        [showCurrentPageReport]="true"
+        [currentPageReportTemplate]="constantes.showingEntries"
+        [rowHover]="true"
+        dataKey="id"
+    >
+        <ng-template pTemplate="header">
+            <tr>
+                <th *ngFor="let col of cols" pSortableColumn="{{ col.field }}">{{ col.header }} <p-sortIcon field="{{ col.field }}"></p-sortIcon></th>
+                <th>Ações</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-item>
+            <tr>
+                <td>{{ item.id }}</td>
+                <td>{{ item.nome }}</td>
+                <td>{{ item.descricao || '-' }}</td>
+                <td>
+                    <p-tag [severity]="getStatusSeverity(item.ultimo_status)" [value]="getStatusLabel(item.ultimo_status)"></p-tag>
+                </td>
+                <td>{{ formatDate(item.ultima_execucao_inicio) }}</td>
+                <td>{{ formatDate(item.ultima_execucao_fim) }}</td>
+                <td>{{ formatDate(item.proxima_execucao) }}</td>
+                <td>{{ item.interval_seconds ?? '-' }}</td>
+                <td>
+                    <p-tag [severity]="getAtivoSeverity(item.ativo)" [value]="getAtivoLabel(item.ativo)"></p-tag>
+                </td>
+                <td>
+                    <button
+                        pButton
+                        pRipple
+                        icon="pi pi-play"
+                        label="Executar agora"
+                        class="p-button-rounded p-button-success"
+                        [disabled]="executandoIds.has(item.id)"
+                        (click)="executar(item)"
+                    ></button>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="10" class="text-center p-4">
+                    <p>Nenhum job encontrado.</p>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</p-card>
+

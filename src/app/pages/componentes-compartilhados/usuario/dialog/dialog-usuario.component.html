@@ -1,0 +1,76 @@
+<p-dialog [(visible)]="visible" [style]="{width: '500px'}" [header]="tituloCadastro" [modal]="true" class="p-fluid">
+    <ng-template pTemplate="content">
+        <form class="form" [formGroup]="formulario">
+            <div class="flex flex-col mb-4">
+                <label for="nome">Nome</label>
+                <input type="text" pInputText id="nome" formControlName="nome"
+                       placeholder="Digite o nome completo" class="w-full" />
+                <small *ngIf="formulario.get('nome')?.invalid && formulario.get('nome')?.touched"
+                       class="p-error">Nome é obrigatório</small>
+            </div>
+
+            <div class="flex flex-col mb-4">
+                <label for="login">Login</label>
+                <input type="text" pInputText id="login" formControlName="login"
+                       placeholder="Digite a matrícula completa. Ex: t999999" class="w-full" />
+                <small *ngIf="formulario.get('login')?.invalid && formulario.get('login')?.touched"
+                       class="p-error">Login é obrigatório</small>
+            </div>
+
+            <div class="flex flex-col mb-4">
+                <label for="email">Email</label>
+                <input type="email" pInputText id="email" formControlName="email"
+                       placeholder="Digite o email" class="w-full" />
+                <small *ngIf="formulario.get('email')?.invalid && formulario.get('email')?.touched"
+                       class="p-error">
+                    <span *ngIf="formulario.get('email')?.errors?.['required']">Email é obrigatório</span>
+                    <span *ngIf="formulario.get('email')?.errors?.['email']">Email inválido</span>
+                </small>
+            </div>
+
+            <div class="flex flex-col mb-4">
+                <label for="cargo">Cargo</label>
+                <input type="text" pInputText id="cargo" formControlName="cargo"
+                       placeholder="Digite o cargo" class="w-full" />
+                <small *ngIf="formulario.get('cargo')?.invalid && formulario.get('cargo')?.touched"
+                       class="p-error">Cargo é obrigatório</small>
+            </div>
+
+            <div class="flex flex-col mb-4">
+                <label for="telefone">Telefone</label>
+                <p-inputMask mask="(99) 99999-9999" inputId="telefone"
+                             placeholder="(99) 99999-9999" formControlName="telefone"
+                             [style]="{width: '100%'}" class="w-full" />
+                <small *ngIf="formulario.get('telefone')?.invalid && formulario.get('telefone')?.touched"
+                       class="p-error">Telefone é obrigatório</small>
+            </div>
+
+            <div class="flex flex-col mb-4">
+                <label for="genero">Gênero</label>
+                <p-dropdown id="genero" formControlName="genero"
+                           [options]="generos" optionLabel="label" optionValue="value"
+                           placeholder="Selecione o gênero" class="w-full"
+                           [appendTo]="'body'" />
+                <small *ngIf="formulario.get('genero')?.invalid && formulario.get('genero')?.touched"
+                       class="p-error">Gênero é obrigatório</small>
+            </div>
+
+            <div class="flex flex-col mb-4">
+                <label for="papels">Papéis</label>
+                <p-multiSelect id="papels" formControlName="papels"
+                              [options]="papels" optionLabel="descricao"
+                              placeholder="Selecione um ou mais papéis" class="w-full"
+                              [appendTo]="'body'" />
+                <small *ngIf="formulario.get('papels')?.invalid && formulario.get('papels')?.touched"
+                       class="p-error">Selecione pelo menos um papel</small>
+            </div>
+        </form>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text"
+                (click)="hideDialog()"></button>
+        <button pButton pRipple label="Salvar" icon="pi pi-check" (click)="save()"
+                [disabled]="!formulario.valid"></button>
+    </ng-template>
+</p-dialog>

@@ -1,0 +1,90 @@
+/* Destaques de linha: não dependem do JIT do Tailwind (classes só em .ts). */
+
+.linha-meu {
+    border: 2px solid rgb(22 163 74);
+    border-radius: 0.5rem;
+}
+
+:host-context(.app-dark) .linha-meu {
+    border-color: rgb(34 197 94);
+}
+
+.linha-dia-simulado {
+    box-shadow: inset 0 0 0 2px rgba(234 179 8 / 0.9);
+    background-color: rgba(254 243 199 / 0.5);
+}
+
+:host-context(.app-dark) .linha-dia-simulado {
+    background-color: rgba(69 26 3 / 0.2);
+}
+
+.linha-passado {
+    opacity: 0.55;
+    filter: saturate(0.75) brightness(0.95);
+}
+
+/** Área da simulação: vidro fosco envolvendo o mesmo layout do calendário real */
+.previsao-fosca {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.42);
+    box-shadow:
+        0 8px 32px rgba(31, 38, 135, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.32);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.18) 100%);
+}
+
+:host-context(.app-dark) .previsao-fosca {
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.38) 100%);
+}
+
+/** Cartão mensal: espelha o calendário real com camada extra de fosqueamento */
+.previsao-fosca-cal {
+    border-color: rgba(148, 163, 184, 0.45);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.22);
+    box-shadow: 0 4px 24px rgba(15, 23, 42, 0.06);
+}
+
+:host-context(.app-dark) .previsao-fosca-cal {
+    border-color: rgba(71, 85, 105, 0.55);
+    background: rgba(15, 23, 42, 0.35);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+}
+
+.previsao-fosca-cal__cabecalho {
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.previsao-fosca-cal__lista {
+    border-color: rgba(148, 163, 184, 0.35);
+}
+
+:host-context(.app-dark) .previsao-fosca-cal__lista {
+    border-color: rgba(51, 65, 85, 0.6);
+}
+
+.previsao-fosca-linha {
+    background: rgba(255, 255, 255, 0.28);
+}
+
+.previsao-fosca-linha:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+:host-context(.app-dark) .previsao-fosca-linha {
+    background: rgba(15, 23, 42, 0.45);
+}
+
+:host-context(.app-dark) .previsao-fosca-linha:hover {
+    background: rgba(30, 41, 59, 0.55);
+}

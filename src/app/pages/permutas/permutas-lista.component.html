@@ -1,0 +1,110 @@
+<p-toast />
+<p-confirmdialog />
+<div class="p-4">
+    <div class="mb-4">
+        <h1 class="text-2xl font-semibold m-0">Permutas</h1>
+        <p class="text-color-secondary text-sm m-0 mt-1">{{ subtitulo }}</p>
+    </div>
+
+    <p-table [value]="permutas" [loading]="carregando" [paginator]="true" [rows]="15" responsiveLayout="scroll">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Escala</th>
+                <th>Solicitante</th>
+                <th>Destinatário</th>
+                <th>Plantão ofertado (origem)</th>
+                <th>Plantão desejado (destino)</th>
+                <th>Status</th>
+                <th>Solicitado em</th>
+                <th [style.min-width]="modo === 'veterinario' ? '11rem' : '3.5rem'">Ações</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-row>
+            <tr>
+                <td>{{ row.escala?.nome || '—' }}</td>
+                <td>{{ row.solicitante?.nome }} <span class="text-color-secondary text-sm" *ngIf="row.solicitante?.login">({{ row.solicitante?.login }})</span></td>
+                <td>{{ row.destinatario?.nome }} <span class="text-color-secondary text-sm" *ngIf="row.destinatario?.login">({{ row.destinatario?.login }})</span></td>
+                <td>{{ textoColunaPlantao(row.plantaoOrigem) }}</td>
+                <td>{{ textoColunaPlantao(row.plantaoDestino) }}</td>
+                <td>
+                    <p-tag [value]="row.status" [severity]="severityPermuta(row.status)" />
+                </td>
+                <td>{{ row.createdAt | date : 'dd/MM/yyyy HH:mm' : undefined : 'pt-BR' }}</td>
+                <td>
+                    <!-- Admin: só ver escala -->
+                    <div *ngIf="modo === 'admin'" class="flex flex-wrap items-center gap-2">
+                        <button
+                            *ngIf="row.escalaId"
+                            pButton
+                            pRipple
+                            type="button"
+                            icon="pi pi-eye"
+                            class="p-button-rounded p-button-sm p-button-text"
+                            pTooltip="Ver escala"
+                            tooltipPosition="left"
+                            [routerLink]="[prefixoArea, 'escalas', row.escalaId]"
+                        ></button>
+                    </div>
+                    <!-- Veterinário: ícones conforme papel -->
+                    <div *ngIf="modo === 'veterinario'" class="flex flex-wrap items-center gap-2">
+                        <button
+                            *ngIf="row.escalaId"
+                            pButton
+                            pRipple
+                            type="button"
+                            icon="pi pi-eye"
+                            class="p-button-rounded p-button-sm p-button-text"
+                            pTooltip="Ver plantão"
+                            tooltipPosition="left"
+                            [routerLink]="[prefixoArea, 'escalas', row.escalaId]"
+                        ></button>
+                        <button
+                            *ngIf="statusPendente(row) && ehSolicitante(row)"
+                            pButton
+                            pRipple
+                            type="button"
+                            icon="pi pi-times"
+                            class="p-button-rounded p-button-sm p-button-text p-button-danger"
+                            pTooltip="Cancelar pedido"
+                            tooltipPosition="left"
+                            [loading]="permutaAcaoLoadingId === row.id"
+                            [disabled]="permutaAcaoLoadingId === row.id"
+                            (click)="confirmarCancelar(row)"
+                        ></button>
+                        <button
+                            *ngIf="statusPendente(row) && ehDestinatario(row)"
+                            pButton
+                            pRipple
+                            type="button"
+                            icon="pi pi-check"
+                            class="p-button-rounded p-button-sm p-button-text"
+                            pTooltip="Aceitar pedido"
+                            tooltipPosition="left"
+                            [loading]="permutaAcaoLoadingId === row.id"
+                            [disabled]="permutaAcaoLoadingId === row.id"
+                            (click)="confirmarAceitar(row)"
+                        ></button>
+                        <button
+                            *ngIf="statusPendente(row) && ehDestinatario(row)"
+                            pButton
+                            pRipple
+                            type="button"
+                            icon="pi pi-ban"
+                            class="p-button-rounded p-button-sm p-button-text p-button-danger"
+                            pTooltip="Recusar pedido"
+                            tooltipPosition="left"
+                            [loading]="permutaAcaoLoadingId === row.id"
+                            [disabled]="permutaAcaoLoadingId === row.id"
+                            (click)="confirmarRecusar(row)"
+                        ></button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="8" class="text-center p-4">Nenhuma permuta encontrada.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

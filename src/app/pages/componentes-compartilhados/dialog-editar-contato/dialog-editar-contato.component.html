@@ -1,0 +1,20 @@
+<p-dialog [visible]="visible" (onHide)="onVisibleChange(false)" header="Editar Informações de Contato" [modal]="true" [closable]="true" [draggable]="false" [resizable]="false" styleClass="p-fluid" [style]="{ width: '500px' }">
+    <p-toast></p-toast>
+
+    <form [formGroup]="formulario" class="p-fluid">
+        <div class="field">
+            <label for="telefone" class="font-bold">Telefone</label>
+            <input type="text" pInputText id="telefone" formControlName="telefone" placeholder="Ex: (11) 99999-9999" class="w-full" [class.ng-invalid]="formulario.get('telefone')?.invalid && formulario.get('telefone')?.touched" />
+            <small class="p-error" *ngIf="formulario.get('telefone')?.invalid && formulario.get('telefone')?.touched">
+                {{ getErrorMessage('telefone') }}
+            </small>
+        </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-content-end gap-2">
+            <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="cancelar()" [disabled]="carregando"></button>
+            <button pButton pRipple label="Salvar" icon="pi pi-check" class="p-button-success" (click)="salvar()" [loading]="carregando" [disabled]="carregando"></button>
+        </div>
+    </ng-template>
+</p-dialog>

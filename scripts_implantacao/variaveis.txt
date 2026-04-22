@@ -1,0 +1,32 @@
+[
+{
+Key: AGE_PRIVATE_KEY_PRODUCTION
+Visibility: Masked
+Value: AGE-SECRET-KEY-1SLW6F7YG0UUF3UUX7W6SU5KL4ZLCTTEFH50W5998NXMUYLMDM3KQTPRG5S
+},
+{
+Key: AGE_PRIVATE_KEY_STAGE
+Visibility: Masked
+Value: AGE-SECRET-KEY-1K4SCQ0E8RV6AN4HHE0ULUUK0WVH2NUZNEWWELDUY6XZU53SVKT6SKRVU9K
+},
+{
+Key: AGE_PUBLIC_KEY_PRODUCTION
+Visibility: Visible
+Value: age1xt0nqattlsud8fex5x30c3vd3tr6hfvl9ea2er622y5gkhhzd54s2w2em2
+},
+{
+Key: AGE_PUBLIC_KEY_STAGE
+Visibility: Visible
+Value: age1hvamwn0k7ucvscqnnju6nz4l4f2w4h8f3alrwcd6ammyt4funujqy5k0gy
+},
+{
+Key: __GITLAB_DEPLOY_TOKEN_PASSWORD
+Visibility: Masked
+Value: gldt-mkZWwNJDzVsmHyamEqVQ
+},
+{
+Key: __GITLAB_DEPLOY_TOKEN_USERNAME
+Visibility: Visible
+Value: gitlab+deploy-token-447
+},
+]

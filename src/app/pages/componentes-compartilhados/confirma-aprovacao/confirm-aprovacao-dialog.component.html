@@ -1,0 +1,11 @@
+<p-dialog [(visible)]="visible" header="Confirmar Aprovação" [modal]="true" [style]="{width:'450px'}">
+  <div class="flex align-items-center justify-content-center">
+    <i class="pi pi-check-circle mr-3" style="font-size: 2rem; color: #22c55e;"></i>
+    <span>Tem certeza que deseja aprovar esta declaração?</span>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton pRipple icon="pi pi-times" class="p-button-text" label="Cancelar" (click)="cancelar()"></button>
+    <button pButton pRipple icon="pi pi-check" label="Aprovar" class="p-button-success" (click)="confirmar()"></button>
+  </ng-template>
+</p-dialog>
+

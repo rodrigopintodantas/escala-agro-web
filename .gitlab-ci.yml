@@ -1,0 +1,107 @@
+include:
+    - project: 'docker-images/helm'
+      ref: '4.7.0'
+      file:
+          - '/pipeline-templates/image/build-and-publish.yml'
+          - '/pipeline-templates/chart/build-and-publish.yml'
+          - '/pipeline-templates/chart/deploy.yml'
+
+variables:
+    HELM_CHART_NAME: escala-agro-web
+    HELM_CHART_DIR: helm/${HELM_CHART_NAME}
+    K8S_NAMESPACE_PREFIX: escala-agro
+    IMAGE_BASE: node:22
+
+stages:
+    - app-build
+    - image-build-and-publish
+    - chart-build-and-publish
+    - deploy
+
+# IMAGE
+image-build-and-publish:
+    stage: image-build-and-publish
+    extends: .template_image-build-and-publish
+    variables:
+        GIT_STRATEGY: fetch
+    rules:
+        - if: $CI_COMMIT_TAG
+    dependencies:
+        - build_stage
+        - build_production
+
+# CHART
+chart-build-and-publish:
+    stage: chart-build-and-publish
+    extends: .template_chart-build-and-publish
+    rules:
+        - if: $CI_COMMIT_TAG
+    dependencies:
+        - build_stage
+        - build_production
+
+# DEPLOY
+deploy_stage:
+    stage: deploy
+    extends: .template_deploy_stage
+    rules:
+        - if: '$CI_COMMIT_TAG =~ "/^*-homolog$/"'
+    variables:
+        HELM_REVISIONS_TO_KEEP: 2
+        GIT_STRATEGY: fetch
+        HELM_RELEASE_NAME: escala-agro-web
+        CI_ENVIRONMENT_NAME: stage
+    dependencies:
+        - build_stage
+        - image-build-and-publish
+        - chart-build-and-publish
+
+deploy_production:
+    stage: deploy
+    extends: .template_deploy_production
+    rules:
+        - if: $CI_COMMIT_TAG =~ "/^*-prod$/"
+    variables:
+        HELM_REVISIONS_TO_KEEP: 5
+        GIT_STRATEGY: fetch
+        HELM_RELEASE_NAME: escala-agro-web
+        CI_ENVIRONMENT_NAME: production
+    dependencies:
+        - build_stage
+        - image-build-and-publish
+        - chart-build-and-publish
+
+# BUILD
+build_stage:
+    image: $IMAGE_BASE
+    stage: app-build
+    rules:
+        - if: $CI_COMMIT_TAG =~ "/^*-homolog$/"
+    script:
+        - npm install
+        - npm install -g @angular/cli
+        - ng build --configuration=stage
+    artifacts:
+        when: on_success
+        paths:
+            - dist/
+            - Dockerfile
+            - nginx.conf
+        expire_in: 24h
+
+build_production:
+    image: $IMAGE_BASE
+    stage: app-build
+    rules:
+        - if: $CI_COMMIT_TAG =~ "/^*-prod$/"
+    script:
+        - npm install
+        - npm install -g @angular/cli
+        - ng build --configuration=production
+    artifacts:
+        when: on_success
+        paths:
+            - dist/
+            - Dockerfile
+            - nginx.conf
+        expire_in: 24h
