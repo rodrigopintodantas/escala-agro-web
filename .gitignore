@@ -43,3 +43,5 @@ testem.log
 Thumbs.db
 
 .env
+scripts_implantacao/comandos.dec
+scripts_implantacao/
