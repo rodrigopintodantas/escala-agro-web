@@ -1,9 +1,10 @@
 <p-toast />
+<p-confirmdialog />
 <div class="p-4">
     <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
             <h1 class="text-2xl font-semibold m-0">Servidores — veterinários</h1>
-            <p class="text-color-secondary m-0 mt-1 text-sm">Saldo = quantidade de plantões previstos ou confirmados no sistema.</p>
+            <p class="text-color-secondary m-0 mt-1 text-sm">Gestão de veterinários ativos no sistema.</p>
         </div>
     </div>
 
@@ -12,7 +13,7 @@
             <tr>
                 <th>Nome</th>
                 <th>Login</th>
-                <th style="width: 10rem">Saldo de plantões</th>
+                <th style="width: 8rem">Ações</th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-row>
@@ -20,15 +21,19 @@
                 <td>{{ row.nome }}</td>
                 <td><span class="font-mono text-sm">{{ row.login }}</span></td>
                 <td>
-                    <span
-                        class="inline-flex items-center justify-center min-w-[2.5rem] rounded-full px-3 py-1 text-sm font-semibold"
-                        [ngClass]="{
-                            'bg-primary-100 text-primary-900 dark:bg-primary-900/40 dark:text-primary-100': row.saldo > 0,
-                            'bg-surface-100 text-surface-600 dark:bg-surface-800': row.saldo === 0
-                        }"
-                    >
-                        {{ row.saldo }}
-                    </span>
+                    <button
+                        pButton
+                        pRipple
+                        type="button"
+                        icon="pi pi-trash"
+                        severity="danger"
+                        class="p-button-rounded p-button-sm"
+                        pTooltip="Excluir veterinário"
+                        tooltipPosition="top"
+                        (click)="confirmarExcluir(row)"
+                        [loading]="excluindoId === row.id"
+                        [disabled]="excluindoId !== null && excluindoId !== row.id"
+                    ></button>
                 </td>
             </tr>
         </ng-template>
