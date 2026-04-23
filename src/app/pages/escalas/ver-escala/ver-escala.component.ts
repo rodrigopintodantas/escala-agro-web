@@ -338,6 +338,36 @@ export class VerEscalaComponent implements OnInit {
         return login ? `${nome} · ${login}` : nome;
     }
 
+    nomesPapelVeterinario(p: PlantaoDetalhe): string[] {
+        const row = p as unknown as Record<string, unknown>;
+        const listaBruta = row['veterinarios'];
+        if (Array.isArray(listaBruta) && listaBruta.length > 0) {
+            const nomes = listaBruta
+                .map((item) => {
+                    const r = item as Record<string, unknown>;
+                    const rawNome = typeof r?.['nome'] === 'string' ? r['nome'] : '';
+                    return String(rawNome || '').trim();
+                })
+                .filter((n) => !!n);
+            if (nomes.length > 0) {
+                return nomes;
+            }
+        }
+        const nomeUnico = p.usuario?.nome?.trim();
+        return nomeUnico ? [nomeUnico] : [];
+    }
+
+    mensagemAlteracaoPlantao(p: PlantaoDetalhe): string | null {
+        const obs = p.observacao?.trim();
+        if (!obs) {
+            return null;
+        }
+        if (obs.startsWith('Gestão - Atestado médico') || obs.startsWith('Alterado por afastamento:')) {
+            return obs;
+        }
+        return null;
+    }
+
     private idUsuarioDoPlantaoNumero(p: PlantaoDetalhe): number | null {
         const row = p as unknown as Record<string, unknown>;
         const raw = row['usuarioId'] ?? row['usuario_id'] ?? row['UsuarioModelId'] ?? p.usuario?.id;
