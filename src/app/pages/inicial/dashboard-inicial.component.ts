@@ -9,10 +9,16 @@ import { map, switchMap } from 'rxjs/operators';
 import { EscalaApiService, EscalaDetalhe, EscalaListagem, PlantaoDetalhe } from '../../service/escala-api.service';
 import { AfastamentoApiService, AfastamentoListagem } from '../../service/afastamento-api.service';
 
+interface PlantaoDiaResumo {
+    dataReferencia: string;
+    linhaVeterinario: string;
+    linhasTecnicos: string[];
+}
+
 interface BlocoMesPlantoes {
     rotulo: string;
     chave: string;
-    itens: PlantaoDetalhe[];
+    itens: PlantaoDiaResumo[];
 }
 
 @Component({
@@ -54,26 +60,39 @@ interface BlocoMesPlantoes {
                                     >
                                         <div class="bg-gradient-to-r from-primary-600 to-primary-500 text-white px-5 py-3">
                                             <h3 class="m-0 text-lg font-semibold capitalize">{{ bloco.rotulo }}</h3>
-                                            <span class="text-sm opacity-90">{{ bloco.itens.length }} plantão(ões)</span>
+                                            <span class="text-sm opacity-90">{{ bloco.itens.length }} dia(s)</span>
                                         </div>
                                         <ul class="list-none m-0 p-0 divide-y divide-surface-200 dark:divide-surface-700">
                                             <li
-                                                *ngFor="let p of bloco.itens"
+                                                *ngFor="let dia of bloco.itens"
                                                 class="flex flex-wrap items-center justify-between gap-3 px-5 py-4 bg-surface-0 dark:bg-surface-900"
                                             >
                                                 <div class="flex flex-1 flex-wrap items-start gap-6">
                                                     <div class="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/40 text-primary-800 dark:text-primary-200">
-                                                        <span class="text-xs font-medium leading-none opacity-80">{{ diaSemana(p.dataReferencia) }}</span>
-                                                        <span class="text-lg font-bold leading-tight">{{ diaNumero(p.dataReferencia) }}</span>
+                                                        <span class="text-xs font-medium leading-none opacity-80">{{ diaSemana(dia.dataReferencia) }}</span>
+                                                        <span class="text-lg font-bold leading-tight">{{ diaNumero(dia.dataReferencia) }}</span>
                                                     </div>
                                                     <div class="min-w-[14rem]">
                                                         <div class="text-color-secondary text-sm uppercase tracking-wide">Data</div>
-                                                        <div class="text-base">{{ formatarDataCompleta(p.dataReferencia) }}</div>
+                                                        <div class="text-base">{{ formatarDataCompleta(dia.dataReferencia) }}</div>
                                                     </div>
-                                                    <div class="min-w-[16rem] rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-50/70 dark:bg-surface-800/40 px-3 py-2">
-                                                        <div class="text-color-secondary text-xs uppercase tracking-wide mb-1">Veterinário</div>
-                                                        <div class="flex flex-col gap-1">
-                                                            <div class="text-sm font-medium">{{ p.usuario?.nome || '—' }}</div>
+                                                    <div class="flex flex-1 flex-wrap gap-3 min-w-0">
+                                                        <div
+                                                            class="min-w-[11rem] flex-1 rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-50/70 dark:bg-surface-800/40 px-3 py-2"
+                                                        >
+                                                            <div class="text-color-secondary text-xs uppercase tracking-wide mb-1">Veterinário</div>
+                                                            <div class="text-sm font-medium">{{ dia.linhaVeterinario }}</div>
+                                                        </div>
+                                                        <div
+                                                            class="min-w-[11rem] flex-1 rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-50/70 dark:bg-surface-800/40 px-3 py-2"
+                                                        >
+                                                            <div class="text-color-secondary text-xs uppercase tracking-wide mb-1">Técnicos</div>
+                                                            <ng-container *ngIf="dia.linhasTecnicos.length; else semTecnicosDash">
+                                                                <div *ngFor="let linha of dia.linhasTecnicos" class="text-sm font-medium">{{ linha }}</div>
+                                                            </ng-container>
+                                                            <ng-template #semTecnicosDash>
+                                                                <div class="text-sm text-color-secondary">—</div>
+                                                            </ng-template>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -129,7 +148,7 @@ export class DashboardInicialComponent implements OnInit {
     carregando = false;
     erroCarregamento: string | null = null;
     escalaAtiva: EscalaListagem | null = null;
-    proximosPlantoes: PlantaoDetalhe[] = [];
+    proximosPlantoes: PlantaoDiaResumo[] = [];
     proximosPlantoesPorMes: BlocoMesPlantoes[] = [];
     afastamentosNoPeriodoEscala: AfastamentoListagem[] = [];
 
@@ -170,15 +189,26 @@ export class DashboardInicialComponent implements OnInit {
                 }),
                 map(({ detalhesEscalas, detalheEscalaAtiva, afastamentos }) => {
                     const hoje = this.hojeIso();
-                    const todosPlantoes = (detalhesEscalas || []).flatMap((d) => d.plantoes || []);
-                    const plantoes = todosPlantoes
+                    const fontePlantoes =
+                        detalheEscalaAtiva && (detalheEscalaAtiva.plantoes || []).length
+                            ? detalheEscalaAtiva.plantoes || []
+                            : (detalhesEscalas || []).flatMap((d) => d.plantoes || []);
+                    const plantoesOrdenados = fontePlantoes
                         .filter((p) => this.dataRefSoDia(p.dataReferencia) >= hoje)
                         .sort((a, b) => {
                             const cmpData = this.dataRefSoDia(a.dataReferencia).localeCompare(this.dataRefSoDia(b.dataReferencia));
                             if (cmpData !== 0) return cmpData;
+                            const ca =
+                                String(a.categoriaPlantao || 'veterinario').toLowerCase() === 'tecnico' ? 1 : 0;
+                            const cb =
+                                String(b.categoriaPlantao || 'veterinario').toLowerCase() === 'tecnico' ? 1 : 0;
+                            if (ca !== cb) return ca - cb;
+                            const va = a.vagaIndice ?? 0;
+                            const vb = b.vagaIndice ?? 0;
+                            if (va !== vb) return va - vb;
                             return Number(a.id) - Number(b.id);
-                        })
-                        .slice(0, 4);
+                        });
+                    const plantoes = this.resumirPrimeirosDiasPlantao(plantoesOrdenados, 4);
 
                     const afastamentosRecentes = [...(afastamentos || [])]
                         .sort((a, b) => {
@@ -244,8 +274,35 @@ export class DashboardInicialComponent implements OnInit {
         return String(d.getDate()).padStart(2, '0');
     }
 
-    private agruparPlantoesPorMes(plantoes: PlantaoDetalhe[]): BlocoMesPlantoes[] {
+    private resumoEquipeDoDia(arr: PlantaoDetalhe[]): Pick<PlantaoDiaResumo, 'linhaVeterinario' | 'linhasTecnicos'> {
+        const vet = arr.find((p) => String(p.categoriaPlantao || 'veterinario').toLowerCase() !== 'tecnico');
+        const tecs = arr
+            .filter((p) => String(p.categoriaPlantao || '').toLowerCase() === 'tecnico')
+            .sort((a, b) => (a.vagaIndice ?? 0) - (b.vagaIndice ?? 0));
+        const linhaVeterinario = vet?.usuario?.nome?.trim() ? `Vet.: ${vet.usuario.nome.trim()}` : '—';
+        const linhasTecnicos = tecs
+            .map((t, i) => (t.usuario?.nome?.trim() ? `Téc. ${i + 1}: ${t.usuario.nome.trim()}` : null))
+            .filter((x): x is string => !!x);
+        return { linhaVeterinario, linhasTecnicos };
+    }
+
+    private resumirPrimeirosDiasPlantao(plantoes: PlantaoDetalhe[], maxDias: number): PlantaoDiaResumo[] {
         const map = new Map<string, PlantaoDetalhe[]>();
+        for (const p of plantoes) {
+            const iso = this.dataRefSoDia(p.dataReferencia);
+            if (!map.has(iso)) map.set(iso, []);
+            map.get(iso)!.push(p);
+        }
+        const datas = [...map.keys()].sort();
+        const escolhidas = datas.slice(0, maxDias);
+        return escolhidas.map((iso) => ({
+            dataReferencia: iso,
+            ...this.resumoEquipeDoDia(map.get(iso)!)
+        }));
+    }
+
+    private agruparPlantoesPorMes(plantoes: PlantaoDiaResumo[]): BlocoMesPlantoes[] {
+        const map = new Map<string, PlantaoDiaResumo[]>();
         for (const p of plantoes) {
             const iso = this.dataRefSoDia(p.dataReferencia);
             const d = new Date(iso + 'T12:00:00');

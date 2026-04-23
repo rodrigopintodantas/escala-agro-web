@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
@@ -15,6 +16,10 @@ import { EscalaApiService, VeterinarioOption } from '../../service/escala-api.se
 export class OrdemServidoresComponent implements OnInit {
     private api = inject(EscalaApiService);
     private msg = inject(MessageService);
+    private route = inject(ActivatedRoute);
+
+    /** `veterinario` ou `tecnico` — pode vir da rota (`data.ordemEscopo`). */
+    escopoOrdem: 'veterinario' | 'tecnico' = 'veterinario';
 
     @Input() servidores: VeterinarioOption[] = [];
     @Input() exibirCabecalho = true;
@@ -32,12 +37,17 @@ export class OrdemServidoresComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        const dataEscopo = this.route.snapshot.data['ordemEscopo'];
+        if (dataEscopo === 'tecnico') {
+            this.escopoOrdem = 'tecnico';
+        }
+
         if (!this.carregarAutomaticamente) {
             return;
         }
 
         this.carregando = true;
-        this.api.listarOrdemServidores().subscribe({
+        this.api.listarOrdemServidores(this.escopoOrdem).subscribe({
             next: (lista) => {
                 this.carregando = false;
                 this.servidores = [...lista];
@@ -58,7 +68,7 @@ export class OrdemServidoresComponent implements OnInit {
 
         this.salvando = true;
         this.api
-            .salvarOrdemServidores(this.servidores.map((s) => Number(s.id)))
+            .salvarOrdemServidores(this.servidores.map((s) => Number(s.id)), this.escopoOrdem)
             .subscribe({
                 next: (lista) => {
                     this.salvando = false;

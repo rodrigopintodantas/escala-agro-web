@@ -200,7 +200,8 @@ export class CriarEscalaComponent {
                 dataInicio: this.fmt(this.dataInicio),
                 dataFim: this.fmt(this.dataFim),
                 periodicidade: this.periodicidade,
-                membros: [],
+                membrosVeterinarios: [],
+                membrosTecnicos: [],
                 datasPlantaoExtras: this.datasPlantaoExtras.map((d) => this.fmt(d))
             })
             .subscribe({

@@ -18,10 +18,17 @@ import {
 } from '../../../service/escala-api.service';
 import { AutenticacaoService } from '../../../service/autenticacao.service';
 
+/** Um dia de plantão na UI: 1 vaga de veterinário + até 2 de técnico (escala unificada ou legado). */
+interface PlantaoDiaAgrupado {
+    dataReferencia: string;
+    plantaoVet: PlantaoDetalhe | null;
+    plantoesTec: PlantaoDetalhe[];
+}
+
 interface BlocoMes {
     rotulo: string;
     chave: string;
-    itens: PlantaoDetalhe[];
+    itens: PlantaoDiaAgrupado[];
 }
 
 interface BlocoMesPrevisao {
@@ -62,7 +69,6 @@ export class VerEscalaComponent implements OnInit {
     escala: EscalaDetalhe | null = null;
     plantoes: PlantaoDetalhe[] = [];
     plantoesPorMes: BlocoMes[] = [];
-    membrosOrdenados: NonNullable<EscalaDetalhe['membros']> = [];
     carregando = true;
     /** Simulação dos próximos plantões após o período da escala. */
     previsaoProximosPlantoes: PrevisaoPlantaoItem[] = [];
@@ -89,7 +95,6 @@ export class VerEscalaComponent implements OnInit {
         const modo = this.route.snapshot.data['escalasModo'];
         if (modo === 'veterinario') {
             this.voltarListaPath = '/vt/escalas';
-            this.exibirUiPermuta = false;
         }
 
         const id = this.route.snapshot.paramMap.get('id');
@@ -102,11 +107,11 @@ export class VerEscalaComponent implements OnInit {
             next: (data) => {
                 this.escala = data;
                 this.plantoes = this.filtrarPlantoesNoPeriodoDaEscala(data, data.plantoes || []);
-                this.membrosOrdenados = [...(data.membros || [])].sort((a, b) => a.ordem - b.ordem);
-                this.plantoesPorMes = this.agruparPorMes(this.plantoes);
+                this.plantoesPorMes = this.agruparPorMes(this.agruparPlantoesPorDia(this.plantoes));
                 this.plantaoIdsComPermutaPendenteSolicitante = new Set(
                     (data.permutaPendenteComoSolicitantePlantaoIds || []).map((x) => Number(x)).filter((n) => !Number.isNaN(n))
                 );
+                this.exibirUiPermuta = true;
                 this.carregando = false;
 
                 this.carregandoPrevisao = true;
@@ -143,14 +148,36 @@ export class VerEscalaComponent implements OnInit {
         });
     }
 
-    private agruparPorMes(plantoes: PlantaoDetalhe[]): BlocoMes[] {
+    private categoriaPlantaoNorm(p: PlantaoDetalhe): 'veterinario' | 'tecnico' {
+        const c = String(p.categoriaPlantao || 'veterinario').toLowerCase();
+        return c === 'tecnico' ? 'tecnico' : 'veterinario';
+    }
+
+    private agruparPlantoesPorDia(plantoes: PlantaoDetalhe[]): PlantaoDiaAgrupado[] {
         const map = new Map<string, PlantaoDetalhe[]>();
         for (const p of plantoes) {
             const iso = this.dataRefSoDia(p.dataReferencia);
+            if (!map.has(iso)) map.set(iso, []);
+            map.get(iso)!.push(p);
+        }
+        return [...map.keys()].sort().map((iso) => {
+            const arr = map.get(iso)!;
+            const plantaoVet = arr.find((x) => this.categoriaPlantaoNorm(x) === 'veterinario') ?? null;
+            const plantoesTec = arr
+                .filter((x) => this.categoriaPlantaoNorm(x) === 'tecnico')
+                .sort((a, b) => (a.vagaIndice ?? 0) - (b.vagaIndice ?? 0));
+            return { dataReferencia: iso, plantaoVet, plantoesTec };
+        });
+    }
+
+    private agruparPorMes(dias: PlantaoDiaAgrupado[]): BlocoMes[] {
+        const map = new Map<string, PlantaoDiaAgrupado[]>();
+        for (const dia of dias) {
+            const iso = this.dataRefSoDia(dia.dataReferencia);
             const d = new Date(iso + 'T12:00:00');
             const chave = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
             if (!map.has(chave)) map.set(chave, []);
-            map.get(chave)!.push(p);
+            map.get(chave)!.push(dia);
         }
         const blocos: BlocoMes[] = [];
         const chavesOrdenadas = [...map.keys()].sort();
@@ -292,7 +319,7 @@ export class VerEscalaComponent implements OnInit {
         return Math.round((b.getTime() - a.getTime()) / 86400000);
     }
 
-    temIntervaloGrandeComAnterior(indice: number, itens: PlantaoDetalhe[]): boolean {
+    temIntervaloGrandeComAnterior(indice: number, itens: PlantaoDiaAgrupado[]): boolean {
         if (indice <= 0) return false;
         return this.diffDiasEntreReferencias(itens[indice - 1].dataReferencia, itens[indice].dataReferencia) > 1;
     }
@@ -318,28 +345,48 @@ export class VerEscalaComponent implements OnInit {
         return login ? `${nome} · ${login}` : nome;
     }
 
-    nomesPapelVeterinario(p: PlantaoDetalhe): string[] {
-        const row = p as unknown as Record<string, unknown>;
-        const listaBruta = row['veterinarios'];
-        if (Array.isArray(listaBruta) && listaBruta.length > 0) {
-            const nomes = listaBruta
-                .map((item) => {
-                    const r = item as Record<string, unknown>;
-                    const rawNome = typeof r?.['nome'] === 'string' ? r['nome'] : '';
-                    return String(rawNome || '').trim();
-                })
-                .filter((n) => !!n);
-            if (nomes.length > 0) {
-                return nomes;
-            }
+    textoPrevisaoVeterinario(item: PrevisaoPlantaoItem): string {
+        const n1 = item.nome?.trim();
+        if (!n1) {
+            return '—';
         }
-        const nomeUnico = p.usuario?.nome?.trim();
-        return nomeUnico ? [nomeUnico] : [];
+        return item.login?.trim() ? `${n1} · ${item.login}` : n1;
     }
 
-    nomesPapelVeterinarioPrevisao(item: PrevisaoPlantaoItem): string[] {
-        const nome = item.nome?.trim();
-        return nome ? [nome] : [];
+    textosPrevisaoTecnicos(item: PrevisaoPlantaoItem): string[] {
+        const out: string[] = [];
+        const n2 = item.segundoNome?.trim();
+        if (n2) {
+            out.push(item.segundoLogin?.trim() ? `${n2} · ${item.segundoLogin}` : n2);
+        }
+        const n3 = item.terceiroNome?.trim();
+        if (n3) {
+            out.push(item.terceiroLogin?.trim() ? `${n3} · ${item.terceiroLogin}` : n3);
+        }
+        return out;
+    }
+
+    membrosPorCategoria(categoria: 'veterinario' | 'tecnico'): NonNullable<EscalaDetalhe['membros']> {
+        return [...(this.escala?.membros || [])]
+            .filter((m) =>
+                (String(m.categoriaMembro || 'veterinario').toLowerCase() === 'tecnico' ? 'tecnico' : 'veterinario') ===
+                categoria
+            )
+            .sort((a, b) => a.ordem - b.ordem);
+    }
+
+    get quantidadeDiasComPlantao(): number {
+        return new Set(this.plantoes.map((p) => this.dataRefSoDia(p.dataReferencia))).size;
+    }
+
+    classesLinhaDia(dia: PlantaoDiaAgrupado): Record<string, boolean> {
+        const slots = [dia.plantaoVet, ...dia.plantoesTec].filter((x): x is PlantaoDetalhe => !!x);
+        const meu = slots.some((p) => this.ehPlantaoDoUsuarioLogado(p));
+        const passado = this.plantaoDiaJaPassou({ dataReferencia: dia.dataReferencia } as PlantaoDetalhe);
+        return {
+            'linha-meu': meu,
+            'linha-passado': passado
+        };
     }
 
     mensagemAlteracaoPlantao(p: PlantaoDetalhe): string | null {

@@ -17,6 +17,10 @@ export interface PlantaoDetalhe {
     escalaId: number;
     usuarioId: number;
     dataReferencia: string;
+    /** 0 = primeira vaga do dia; 1 = segunda (escala de técnicos). */
+    vagaIndice?: number;
+    /** `veterinario` | `tecnico` — escala unificada: 1 vet + 2 técnicos por dia. */
+    categoriaPlantao?: string;
     status: string;
     observacao?: string | null;
     usuario?: { id: number; nome: string; login: string };
@@ -35,6 +39,7 @@ export interface EscalaListagem {
         id: number;
         ordem: number;
         usuarioId: number;
+        categoriaMembro?: string;
         usuario?: { id: number; nome: string; login: string };
     }[];
 }
@@ -51,6 +56,12 @@ export interface PrevisaoPlantaoItem {
     usuarioId: number;
     nome: string | null;
     login: string | null;
+    segundoUsuarioId?: number;
+    segundoNome?: string | null;
+    segundoLogin?: string | null;
+    terceiroUsuarioId?: number;
+    terceiroNome?: string | null;
+    terceiroLogin?: string | null;
 }
 
 export interface PrevisaoPlantoesResposta {
@@ -111,7 +122,8 @@ export interface CriarEscalaPayload {
     dataInicio: string;
     dataFim: string;
     periodicidade: string;
-    membros?: { usuarioId: number; ordem?: number }[];
+    membrosVeterinarios?: { usuarioId: number; ordem?: number }[];
+    membrosTecnicos?: { usuarioId: number; ordem?: number }[];
     /** Datas (YYYY-MM-DD) extras como plantão, além de sábados e domingos no período. */
     datasPlantaoExtras?: string[];
 }
@@ -129,12 +141,20 @@ export class EscalaApiService {
         return this.http.get<VeterinarioOption[]>(`${this.base}/veterinarios`);
     }
 
-    listarOrdemServidores(): Observable<VeterinarioOption[]> {
-        return this.http.get<VeterinarioOption[]>(`${this.base}/ordem-servidores`);
+    listarOrdemServidores(escopo: 'veterinario' | 'tecnico' = 'veterinario'): Observable<VeterinarioOption[]> {
+        const params = new HttpParams().set('escopo', escopo);
+        return this.http.get<VeterinarioOption[]>(`${this.base}/ordem-servidores`, { params });
     }
 
-    salvarOrdemServidores(usuarioIds: number[]): Observable<VeterinarioOption[]> {
-        return this.http.put<VeterinarioOption[]>(`${this.base}/ordem-servidores`, { usuarioIds });
+    listarTecnicos(): Observable<VeterinarioOption[]> {
+        return this.http.get<VeterinarioOption[]>(`${this.base}/tecnicos`);
+    }
+
+    salvarOrdemServidores(
+        usuarioIds: number[],
+        escopo: 'veterinario' | 'tecnico' = 'veterinario'
+    ): Observable<VeterinarioOption[]> {
+        return this.http.put<VeterinarioOption[]>(`${this.base}/ordem-servidores`, { usuarioIds, escopo });
     }
 
     listarPermutas(): Observable<PermutaListagem[]> {
