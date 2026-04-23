@@ -1,0 +1,75 @@
+<div class="p-4">
+    <ng-container *ngIf="ehAreaAdmin; else dashboardPadrao">
+        <div class="flex items-center justify-between mb-4 gap-3">
+            <h1 class="text-2xl font-semibold m-0">Dashboard administrativo</h1>
+            <p-tag *ngIf="escalaAtiva" value="Escala ativa encontrada" severity="success" />
+        </div>
+
+        <div *ngIf="carregando" class="flex justify-center py-8">
+            <p-progressSpinner strokeWidth="4" styleClass="w-12 h-12"></p-progressSpinner>
+        </div>
+
+        <p-card *ngIf="!carregando && erroCarregamento" header="Erro ao carregar">
+            <p class="m-0 text-red-600 dark:text-red-400">{{ erroCarregamento }}</p>
+        </p-card>
+
+        <p-card *ngIf="!carregando && !erroCarregamento && !escalaAtiva" header="Próximos plantões">
+            <p class="m-0 text-color-secondary">Não há escala ativa no momento.</p>
+        </p-card>
+
+        <ng-container *ngIf="!carregando && !erroCarregamento && escalaAtiva">
+            <div class="text-sm text-color-secondary mb-4">
+                Escala ativa: <strong>{{ escalaAtiva.nome }}</strong> ({{ formatarPeriodo(escalaAtiva.dataInicio, escalaAtiva.dataFim) }})
+            </div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <p-card header="Próximos plantões">
+                    <ng-container *ngIf="proximosPlantoes.length; else semProximosPlantoes">
+                        <div class="flex flex-col gap-3">
+                            <div
+                                *ngFor="let p of proximosPlantoes"
+                                class="rounded-lg border border-surface-200 dark:border-surface-700 px-3 py-2 flex items-center justify-between gap-3"
+                            >
+                                <div class="font-medium">{{ formatarData(p.dataReferencia) }}</div>
+                                <div class="text-color-secondary text-sm">
+                                    {{ p.usuario?.nome || '—' }}<span *ngIf="p.usuario?.login"> · {{ p.usuario?.login }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-container>
+                    <ng-template #semProximosPlantoes>
+                        <p class="m-0 text-color-secondary">Não há próximos plantões para a escala ativa.</p>
+                    </ng-template>
+                </p-card>
+
+                <p-card header="Afastamentos do plantão">
+                    <ng-container *ngIf="afastamentosNoPeriodoEscala.length; else semAfastamentos">
+                        <div class="flex flex-col gap-3">
+                            <div
+                                *ngFor="let af of afastamentosNoPeriodoEscala"
+                                class="rounded-lg border border-surface-200 dark:border-surface-700 px-3 py-2"
+                            >
+                                <div class="flex items-center justify-between gap-2 mb-1">
+                                    <div class="font-medium">{{ af.usuario?.nome || '—' }}</div>
+                                    <p-tag [value]="af.tipo?.tipo || 'Afastamento'" severity="info" />
+                                </div>
+                                <div class="text-sm text-color-secondary">
+                                    {{ formatarPeriodo(af.dataInicio, af.dataFim) }}
+                                </div>
+                            </div>
+                        </div>
+                    </ng-container>
+                    <ng-template #semAfastamentos>
+                        <p class="m-0 text-color-secondary">Nenhum afastamento cadastrado no período da escala ativa.</p>
+                    </ng-template>
+                </p-card>
+            </div>
+        </ng-container>
+    </ng-container>
+</div>
+
+<ng-template #dashboardPadrao>
+    <p-card header="Escala Agro">
+        <p class="m-0">Projeto inicial carregado com sucesso.</p>
+    </p-card>
+</ng-template>
