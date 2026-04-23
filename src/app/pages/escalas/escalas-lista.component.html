@@ -59,7 +59,7 @@
                                 tooltipPosition="top"
                                 (click)="abrirEditarDatasExtras(row)"
                                 [loading]="carregandoDetalheEscalaId === row.id"
-                                [disabled]="carregandoDetalheEscalaId !== null"
+                                [disabled]="carregandoDetalheEscalaId !== null || escalaConcluida(row)"
                             ></button>
                             <button
                                 pButton
@@ -72,6 +72,7 @@
                                 tooltipPosition="top"
                                 (click)="confirmarExcluir(row)"
                                 [loading]="excluindoId === row.id"
+                                [disabled]="escalaConcluida(row)"
                             ></button>
                             <button
                                 *ngIf="podeExibirBotaoAtivar(row)"

@@ -150,6 +150,10 @@ export class EscalasListaComponent implements OnInit {
         return (row.status || '').toLowerCase() === 'ativa';
     }
 
+    escalaConcluida(row: EscalaListagem): boolean {
+        return (row.status || '').toLowerCase() === 'concluida';
+    }
+
     ativarEscala(row: EscalaListagem): void {
         this.ativandoEscalaId = row.id;
         this.api.ativar(row.id).subscribe({
