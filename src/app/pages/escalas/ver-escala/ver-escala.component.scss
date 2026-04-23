@@ -23,6 +23,40 @@
     filter: saturate(0.75) brightness(0.95);
 }
 
+.previsao-calendario-claro {
+    background: rgba(248, 250, 252, 0.78);
+    border-color: rgba(203, 213, 225, 0.9);
+}
+
+.previsao-calendario-claro__cabecalho {
+    background: linear-gradient(90deg, rgb(253 230 138), rgb(254 240 138));
+}
+
+.previsao-calendario-claro__linha {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.previsao-calendario-claro__linha:hover {
+    background: rgba(248, 250, 252, 0.96);
+}
+
+:host-context(.app-dark) .previsao-calendario-claro {
+    background: rgba(30, 41, 59, 0.46);
+    border-color: rgba(71, 85, 105, 0.82);
+}
+
+:host-context(.app-dark) .previsao-calendario-claro__cabecalho {
+    background: linear-gradient(90deg, rgb(51 65 85), rgb(71 85 105));
+}
+
+:host-context(.app-dark) .previsao-calendario-claro__linha {
+    background: rgba(30, 41, 59, 0.42);
+}
+
+:host-context(.app-dark) .previsao-calendario-claro__linha:hover {
+    background: rgba(51, 65, 85, 0.52);
+}
+
 /** Área da simulação: vidro fosco envolvendo o mesmo layout do calendário real */
 .previsao-fosca {
     position: relative;

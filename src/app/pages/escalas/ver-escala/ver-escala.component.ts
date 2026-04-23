@@ -3,7 +3,6 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-import { CalendarModule } from 'primeng/calendar';
 import { DialogModule } from 'primeng/dialog';
 import { DropdownModule } from 'primeng/dropdown';
 import { TagModule } from 'primeng/tag';
@@ -44,7 +43,6 @@ interface OpcaoPlantaoPermuta {
         FormsModule,
         RouterModule,
         ButtonModule,
-        CalendarModule,
         DialogModule,
         DropdownModule,
         TagModule,
@@ -87,8 +85,6 @@ export class VerEscalaComponent implements OnInit {
     /** UI de permuta oculta momentaneamente no perfil veterinário (menu e botão). */
     exibirUiPermuta = true;
 
-    dataHojeSimulada: Date = this.criarDataLocalHoje();
-
     ngOnInit(): void {
         const modo = this.route.snapshot.data['escalasModo'];
         if (modo === 'veterinario') {
@@ -111,13 +107,12 @@ export class VerEscalaComponent implements OnInit {
                 this.plantaoIdsComPermutaPendenteSolicitante = new Set(
                     (data.permutaPendenteComoSolicitantePlantaoIds || []).map((x) => Number(x)).filter((n) => !Number.isNaN(n))
                 );
-                this.dataHojeSimulada = this.criarDataLocalHoje();
                 this.carregando = false;
 
                 this.carregandoPrevisao = true;
                 this.previsaoProximosPlantoes = [];
                 this.previsaoPorMes = [];
-                this.api.preverProximosPlantoes(numId, 8).subscribe({
+                this.api.preverProximosPlantoes(numId, 6).subscribe({
                     next: (pv) => {
                         this.previsaoProximosPlantoes = pv.itens || [];
                         this.previsaoPorMes = this.agruparPrevisaoPorMes(this.previsaoProximosPlantoes);
@@ -202,28 +197,13 @@ export class VerEscalaComponent implements OnInit {
         return new Date(t.getFullYear(), t.getMonth(), t.getDate(), 12, 0, 0, 0);
     }
 
-    aoSelecionarDataSimulada(d: Date): void {
-        if (!(d instanceof Date) || isNaN(d.getTime())) {
-            return;
-        }
-        this.dataHojeSimulada = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0);
+    private hojeIsoSistema(): string {
+        return this.fmtData(this.criarDataLocalHoje());
     }
 
-    resetarDataHojeSimulada(): void {
-        this.dataHojeSimulada = this.criarDataLocalHoje();
-    }
-
-    hojeIsoSimulado(): string {
-        return this.fmtData(this.dataHojeSimulada);
-    }
-
-    plantaoEhDiaSimulado(p: PlantaoDetalhe): boolean {
-        return this.dataRefSoDia(p.dataReferencia) === this.hojeIsoSimulado();
-    }
-
-    /** Comparado ao “hoje” desta página (data simulada): dia do plantão já passou. */
+    /** Comparado ao “hoje” real do sistema: dia do plantão já passou. */
     plantaoDiaJaPassou(p: PlantaoDetalhe): boolean {
-        return this.dataRefSoDia(p.dataReferencia) < this.hojeIsoSimulado();
+        return this.dataRefSoDia(p.dataReferencia) < this.hojeIsoSistema();
     }
 
     botaoPermutaDesabilitado(p: PlantaoDetalhe): boolean {
@@ -357,6 +337,11 @@ export class VerEscalaComponent implements OnInit {
         return nomeUnico ? [nomeUnico] : [];
     }
 
+    nomesPapelVeterinarioPrevisao(item: PrevisaoPlantaoItem): string[] {
+        const nome = item.nome?.trim();
+        return nome ? [nome] : [];
+    }
+
     mensagemAlteracaoPlantao(p: PlantaoDetalhe): string | null {
         const obs = p.observacao?.trim();
         if (!obs) {
@@ -410,11 +395,9 @@ export class VerEscalaComponent implements OnInit {
 
     classesLinhaPlantao(p: PlantaoDetalhe): Record<string, boolean> {
         const meu = this.ehPlantaoDoUsuarioLogado(p);
-        const hoje = this.plantaoEhDiaSimulado(p);
         const passado = this.plantaoDiaJaPassou(p);
         return {
             'linha-meu': meu,
-            'linha-dia-simulado': hoje,
             'linha-passado': passado
         };
     }
