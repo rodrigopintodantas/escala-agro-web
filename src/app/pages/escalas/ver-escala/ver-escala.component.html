@@ -128,7 +128,6 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
-                        <p-tag [value]="p.status" severity="info" />
                         <button
                             *ngIf="ehPlantaoDoUsuarioLogado(p) && exibirUiPermuta"
                             pButton
@@ -208,9 +207,6 @@
                                     </ng-template>
                                 </div>
                             </div>
-                        </div>
-                        <div class="flex items-center gap-2 shrink-0">
-                            <p-tag value="Previsto" severity="info" />
                         </div>
                     </li>
                 </ul>

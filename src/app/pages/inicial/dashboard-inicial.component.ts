@@ -77,9 +77,6 @@ interface BlocoMesPlantoes {
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="flex items-center gap-2 shrink-0">
-                                                    <p-tag [value]="p.status || 'previsto'" severity="info" />
-                                                </div>
                                             </li>
                                         </ul>
                                     </section>
@@ -90,7 +87,7 @@ interface BlocoMesPlantoes {
                             </ng-template>
                         </p-card>
 
-                        <p-card header="Afastamentos do plantão">
+                        <p-card header="Últimos Afastamentos Cadastrados">
                             <ng-container *ngIf="afastamentosNoPeriodoEscala.length; else semAfastamentos">
                                 <div class="flex flex-col gap-3">
                                     <div
