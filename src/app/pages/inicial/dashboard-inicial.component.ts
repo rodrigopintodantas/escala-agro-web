@@ -209,7 +209,7 @@ export class DashboardInicialComponent implements OnInit {
                             if (va !== vb) return va - vb;
                             return Number(a.id) - Number(b.id);
                         });
-                    const plantoes = this.resumirPrimeirosDiasPlantao(plantoesOrdenados, 4);
+                    const plantoes = this.resumirPrimeirosDiasPlantao(plantoesOrdenados, 2);
 
                     const afastamentosRecentes = [...(afastamentos || [])]
                         .sort((a, b) => {
