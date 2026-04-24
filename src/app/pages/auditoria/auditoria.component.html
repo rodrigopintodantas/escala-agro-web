@@ -6,6 +6,21 @@
         <p class="text-color-secondary m-0 mt-1">Linha do tempo da evolução de ordem nas escalas abertas.</p>
     </div>
 
+    <div class="mb-3 flex gap-2 flex-wrap" *ngIf="!carregando && escalas.length">
+        <button
+            *ngFor="let esc of escalas"
+            pButton
+            type="button"
+            [label]="esc.nome"
+            [ngClass]="{
+                'p-button-primary': escalaSelecionadaId === esc.escalaId,
+                'p-button-outlined': escalaSelecionadaId !== esc.escalaId
+            }"
+            [disabled]="carregando"
+            (click)="selecionarEscala(esc.escalaId)"
+        ></button>
+    </div>
+
     <div class="mb-4 flex gap-2">
         <button
             pButton
@@ -35,7 +50,7 @@
         </p-card>
 
         <div class="flex flex-col gap-4" *ngIf="escalas.length">
-            <p-card *ngFor="let esc of escalas" [header]="esc.nome">
+            <p-card *ngFor="let esc of escalasExibicao()" [header]="esc.nome">
                 <div class="text-sm text-color-secondary mb-3">Período: {{ periodo(esc.dataInicio, esc.dataFim) }}</div>
 
                 <div class="relative pl-6 flex flex-col gap-3" *ngIf="esc.eventos.length; else semEventos">
