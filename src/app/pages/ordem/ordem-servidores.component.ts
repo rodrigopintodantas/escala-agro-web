@@ -98,14 +98,24 @@ export class OrdemServidoresComponent implements OnInit {
             return;
         }
 
+        const ordemEnviadaIds = this.servidores.map((s) => Number(s.id));
+        const servidoresNaOrdemEnviada = [...this.servidores];
         this.salvando = true;
         this.api
-            .salvarOrdemServidores(this.servidores.map((s) => Number(s.id)), this.escopoOrdem)
+            .salvarOrdemServidores(ordemEnviadaIds, this.escopoOrdem)
             .subscribe({
                 next: (lista) => {
                     this.salvando = false;
-                    this.servidores = [...lista];
-                    this.ordemOriginalIds = this.servidores.map((s) => Number(s.id));
+                    /**
+                     * Mantém a ordem escolhida pelo usuário para evitar "piscar" visual quando a API
+                     * retorna a lista ainda não refletindo a ordenação recém-salva.
+                     */
+                    const mapaRetorno = new Map((lista || []).map((s) => [Number(s.id), s]));
+                    this.servidores = servidoresNaOrdemEnviada.map((s) => {
+                        const ret = mapaRetorno.get(Number(s.id));
+                        return ret ? { ...ret } : s;
+                    });
+                    this.ordemOriginalIds = [...ordemEnviadaIds];
                     this.msg.add({ severity: 'success', summary: 'Ordem', detail: 'Ordem dos servidores salva com sucesso.' });
                 },
                 error: (err) => {
