@@ -68,6 +68,35 @@ export interface PrevisaoPlantoesResposta {
     itens: PrevisaoPlantaoItem[];
 }
 
+export interface AuditoriaOrdemUsuarioItem {
+    usuarioId: number;
+    nome: string | null;
+    login: string | null;
+}
+
+export interface AuditoriaEscalaEventoItem {
+    id: number;
+    categoriaMembro: 'veterinario' | 'tecnico' | string;
+    tipoEvento: string;
+    referenciaTipo?: string | null;
+    referenciaId?: number | null;
+    dataReferencia?: string | null;
+    detalhes?: unknown;
+    createdAt: string;
+    ordemAntes: AuditoriaOrdemUsuarioItem[];
+    ordemDepois: AuditoriaOrdemUsuarioItem[];
+}
+
+export interface AuditoriaEscalaAbertaItem {
+    escalaId: number;
+    nome: string;
+    dataInicio: string;
+    dataFim: string;
+    status: string;
+    categoriaMembro: 'veterinario' | 'tecnico' | string;
+    eventos: AuditoriaEscalaEventoItem[];
+}
+
 export interface PermutaListagem {
     id: number;
     escalaId: number;
@@ -144,6 +173,11 @@ export class EscalaApiService {
     listarOrdemServidores(escopo: 'veterinario' | 'tecnico' = 'veterinario'): Observable<VeterinarioOption[]> {
         const params = new HttpParams().set('escopo', escopo);
         return this.http.get<VeterinarioOption[]>(`${this.base}/ordem-servidores`, { params });
+    }
+
+    listarAuditoria(categoria: 'veterinario' | 'tecnico' = 'veterinario'): Observable<AuditoriaEscalaAbertaItem[]> {
+        const params = new HttpParams().set('categoria', categoria);
+        return this.http.get<AuditoriaEscalaAbertaItem[]>(`${this.base}/auditoria`, { params });
     }
 
     listarTecnicos(): Observable<VeterinarioOption[]> {

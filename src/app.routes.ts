@@ -60,6 +60,11 @@ export const appRoutes: Routes = [
                 path: 'servidores',
                 data: { breadcrumb: 'Servidores' },
                 loadComponent: () => import('./app/pages/servidores/servidores-lista.component').then((c) => c.ServidoresListaComponent)
+            },
+            {
+                path: 'auditoria',
+                data: { breadcrumb: 'Auditoria' },
+                loadComponent: () => import('./app/pages/auditoria/auditoria.component').then((c) => c.AuditoriaComponent)
             }
         ]
     },

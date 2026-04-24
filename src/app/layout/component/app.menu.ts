@@ -83,6 +83,11 @@ export class AppMenu implements OnInit {
                     label: 'Servidores',
                     icon: 'pi pi-users',
                     routerLink: ['/admin/servidores']
+                },
+                {
+                    label: 'Auditoria',
+                    icon: 'pi pi-history',
+                    routerLink: ['/admin/auditoria']
                 }
             ]
         }

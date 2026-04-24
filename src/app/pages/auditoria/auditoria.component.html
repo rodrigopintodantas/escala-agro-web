@@ -1,0 +1,73 @@
+<p-toast />
+
+<div class="p-4">
+    <div class="mb-4">
+        <h1 class="text-2xl font-semibold m-0">Auditoria</h1>
+        <p class="text-color-secondary m-0 mt-1">Linha do tempo da evolução de ordem nas escalas abertas.</p>
+    </div>
+
+    <div class="mb-4 flex gap-2">
+        <button
+            pButton
+            type="button"
+            label="Veterinário"
+            [ngClass]="{ 'p-button-primary': abaSelecionada === 'veterinario', 'p-button-outlined': abaSelecionada !== 'veterinario' }"
+            [disabled]="carregando"
+            (click)="trocarAba('veterinario')"
+        ></button>
+        <button
+            pButton
+            type="button"
+            label="Técnico"
+            [ngClass]="{ 'p-button-primary': abaSelecionada === 'tecnico', 'p-button-outlined': abaSelecionada !== 'tecnico' }"
+            [disabled]="carregando"
+            (click)="trocarAba('tecnico')"
+        ></button>
+    </div>
+
+    <div *ngIf="carregando" class="flex justify-center py-6">
+        <p-progressSpinner strokeWidth="4" styleClass="w-10 h-10"></p-progressSpinner>
+    </div>
+
+    <ng-container *ngIf="!carregando">
+        <p-card *ngIf="!escalas.length">
+            <p class="m-0 text-color-secondary">Não há escalas abertas para a categoria selecionada.</p>
+        </p-card>
+
+        <div class="flex flex-col gap-4" *ngIf="escalas.length">
+            <p-card *ngFor="let esc of escalas" [header]="esc.nome">
+                <div class="text-sm text-color-secondary mb-3">Período: {{ periodo(esc.dataInicio, esc.dataFim) }}</div>
+
+                <div class="relative pl-6 flex flex-col gap-3" *ngIf="esc.eventos.length; else semEventos">
+                    <span class="absolute left-[11px] top-2 bottom-2 w-px bg-surface-300 dark:bg-surface-600"></span>
+                    <div
+                        *ngFor="let ev of esc.eventos"
+                        class="relative rounded-lg border border-surface-200 dark:border-surface-700 p-3 flex flex-col gap-2 bg-surface-0 dark:bg-surface-900"
+                    >
+                        <span
+                            class="absolute -left-[22px] top-4 h-3 w-3 rounded-full border-2 border-surface-0 dark:border-surface-900"
+                            [ngClass]="classeMarcadorEvento(ev)"
+                        ></span>
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="font-semibold">{{ tituloEvento(ev) }}</div>
+                            <p-tag [value]="(ev.createdAt | date : 'dd/MM/yyyy HH:mm') || ''" [severity]="severidadeEvento(ev)" />
+                        </div>
+                        <div class="text-sm text-color-secondary" *ngIf="descricaoEvento(ev)">
+                            {{ descricaoEvento(ev) }}
+                        </div>
+                        <div class="text-sm">
+                            <strong>Ordem anterior:</strong> {{ nomesOrdem(ev.ordemAntes) }}
+                        </div>
+                        <div class="text-sm">
+                            <strong>Nova ordem:</strong> {{ nomesOrdem(ev.ordemDepois) }}
+                        </div>
+                    </div>
+                </div>
+
+                <ng-template #semEventos>
+                    <p class="m-0 text-color-secondary">Sem eventos de auditoria para esta escala.</p>
+                </ng-template>
+            </p-card>
+        </div>
+    </ng-container>
+</div>
