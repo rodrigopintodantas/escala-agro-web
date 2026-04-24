@@ -25,14 +25,17 @@
                         pButton
                         pRipple
                         type="button"
-                        icon="pi pi-trash"
-                        severity="danger"
+                        [icon]="existeEscalaAtiva ? (row.suspensoEscala ? 'pi pi-play' : 'pi pi-pause') : 'pi pi-trash'"
+                        [severity]="existeEscalaAtiva ? (row.suspensoEscala ? 'success' : 'warn') : 'danger'"
                         class="p-button-rounded p-button-sm"
-                        pTooltip="Excluir veterinário"
+                        [pTooltip]="existeEscalaAtiva ? (row.suspensoEscala ? 'Reativar Servidor' : 'Suspender Servidor') : 'Excluir veterinário'"
                         tooltipPosition="top"
                         (click)="confirmarExcluir(row)"
-                        [loading]="excluindoId === row.id"
-                        [disabled]="excluindoId !== null && excluindoId !== row.id"
+                        [loading]="(excluindoId === row.id) || (suspenderId === row.id)"
+                        [disabled]="
+                            (excluindoId !== null && excluindoId !== row.id) ||
+                            (suspenderId !== null && suspenderId !== row.id)
+                        "
                     ></button>
                 </td>
             </tr>

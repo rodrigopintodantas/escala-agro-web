@@ -336,8 +336,11 @@ export class VerEscalaComponent implements OnInit {
 
     /** Alinhado ao texto gravado em `plantao.observacao` no recálculo por atestado. */
     rotuloExibicaoPlantao(p: PlantaoDetalhe): string {
+        if (p.usuario?.suspensoEscala) {
+            return 'Gestão - Servidor Suspenso da Escala';
+        }
         const obs = p.observacao?.trim();
-        if (obs && obs.startsWith('Gestão - Atestado médico')) {
+        if (obs && (obs.startsWith('Gestão - Atestado médico') || obs.startsWith('Gestão - Servidor Suspenso da Escala'))) {
             return obs;
         }
         const nome = p.usuario?.nome?.trim() || '—';
@@ -390,11 +393,18 @@ export class VerEscalaComponent implements OnInit {
     }
 
     mensagemAlteracaoPlantao(p: PlantaoDetalhe): string | null {
+        if (p.usuario?.suspensoEscala) {
+            return 'Gestão - Servidor Suspenso da Escala';
+        }
         const obs = p.observacao?.trim();
         if (!obs) {
             return null;
         }
-        if (obs.startsWith('Gestão - Atestado médico') || obs.startsWith('Alterado por afastamento:')) {
+        if (
+            obs.startsWith('Gestão - Atestado médico') ||
+            obs.startsWith('Gestão - Servidor Suspenso da Escala') ||
+            obs.startsWith('Alterado por afastamento:')
+        ) {
             return obs;
         }
         return null;

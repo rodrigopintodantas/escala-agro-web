@@ -23,7 +23,7 @@ export interface PlantaoDetalhe {
     categoriaPlantao?: string;
     status: string;
     observacao?: string | null;
-    usuario?: { id: number; nome: string; login: string };
+    usuario?: { id: number; nome: string; login: string; suspensoEscala?: boolean };
 }
 
 export interface EscalaListagem {

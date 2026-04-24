@@ -24,6 +24,8 @@ export class ServidoresListaComponent implements OnInit {
     linhas: VeterinarioListaItem[] = [];
     carregando = true;
     excluindoId: number | null = null;
+    suspenderId: number | null = null;
+    existeEscalaAtiva = false;
 
     ngOnInit(): void {
         this.carregar();
@@ -31,19 +33,54 @@ export class ServidoresListaComponent implements OnInit {
 
     private carregar(): void {
         this.carregando = true;
-        this.api.listarVeterinarios().subscribe({
-            next: (data) => {
-                this.linhas = data;
-                this.carregando = false;
+        this.api.existeEscalaAtiva().subscribe({
+            next: (ativa) => {
+                this.existeEscalaAtiva = ativa;
+                this.api.listarVeterinarios().subscribe({
+                    next: (data) => {
+                        this.linhas = data;
+                        this.carregando = false;
+                    },
+                    error: () => {
+                        this.carregando = false;
+                        this.msg.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar os veterinários.' });
+                    }
+                });
             },
             error: () => {
                 this.carregando = false;
-                this.msg.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar os veterinários.' });
+                this.msg.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível validar escalas ativas.' });
             }
         });
     }
 
     confirmarExcluir(row: VeterinarioListaItem): void {
+        if (this.existeEscalaAtiva) {
+            if (row.suspensoEscala) {
+                this.confirm.confirm({
+                    message: `Reativar o servidor "${row.nome}" para participação em escalas ativas?`,
+                    header: 'Reativar servidor',
+                    icon: 'pi pi-exclamation-triangle',
+                    acceptLabel: 'Reativar',
+                    rejectLabel: 'Cancelar',
+                    acceptButtonStyleClass: 'p-button-success',
+                    rejectButtonStyleClass: 'p-button-text',
+                    accept: () => this.reativar(row)
+                });
+                return;
+            }
+            this.confirm.confirm({
+                message: `Suspender o servidor "${row.nome}" nas escalas ativas? O servidor ficará marcado como suspenso da escala.`,
+                header: 'Suspender servidor',
+                icon: 'pi pi-exclamation-triangle',
+                acceptLabel: 'Suspender',
+                rejectLabel: 'Cancelar',
+                acceptButtonStyleClass: 'p-button-warning',
+                rejectButtonStyleClass: 'p-button-text',
+                accept: () => this.suspender(row)
+            });
+            return;
+        }
         this.confirm.confirm({
             message:
                 `Excluir o veterinário "${row.nome}"? Ele será removido do papel de veterinário, desativado no sistema e a ordem dos servidores será recalculada (incluindo escala ativa, se houver).`,
@@ -77,6 +114,48 @@ export class ServidoresListaComponent implements OnInit {
             error: (err) => {
                 this.excluindoId = null;
                 const det = err?.error?.message || 'Não foi possível excluir o veterinário.';
+                this.msg.add({ severity: 'error', summary: 'Erro', detail: det });
+            }
+        });
+    }
+
+    private suspender(row: VeterinarioListaItem): void {
+        this.suspenderId = row.id;
+        this.api.suspenderVeterinario(row.id).subscribe({
+            next: (res) => {
+                this.suspenderId = null;
+                const detalhe = `Escalas afetadas: ${res.escalasAfetadas}; servidor marcado como suspenso da escala.`;
+                this.msg.add({
+                    severity: 'success',
+                    summary: 'Servidor suspenso',
+                    detail: detalhe
+                });
+                this.carregar();
+            },
+            error: (err) => {
+                this.suspenderId = null;
+                const det = err?.error?.message || 'Não foi possível suspender o servidor.';
+                this.msg.add({ severity: 'error', summary: 'Erro', detail: det });
+            }
+        });
+    }
+
+    private reativar(row: VeterinarioListaItem): void {
+        this.suspenderId = row.id;
+        this.api.reativarVeterinario(row.id).subscribe({
+            next: (res) => {
+                this.suspenderId = null;
+                const detalhe = `Escalas afetadas: ${res.escalasAfetadas}; servidor reativado para escala.`;
+                this.msg.add({
+                    severity: 'success',
+                    summary: 'Servidor reativado',
+                    detail: detalhe
+                });
+                this.carregar();
+            },
+            error: (err) => {
+                this.suspenderId = null;
+                const det = err?.error?.message || 'Não foi possível reativar o servidor.';
                 this.msg.add({ severity: 'error', summary: 'Erro', detail: det });
             }
         });
