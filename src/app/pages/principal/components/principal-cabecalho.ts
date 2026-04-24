@@ -159,7 +159,7 @@ export class PrincipalCabecalho {
                     } else if (error && error.message) {
                         this.errorMessage = error.message;
                     } else {
-                        this.errorMessage = 'Não foi possível se conectar ao servidor. Verifique se o backend está rodando na porta 3000.';
+                        this.errorMessage = 'Não foi possível se conectar ao servidor. Verifique se o backend está rodando na porta 4001.';
                     }
                     this.error = true;
                     this.carregando = false;
@@ -245,7 +245,7 @@ export class PrincipalCabecalho {
                     } else if (error && error.message) {
                         this.errorMessage = error.message;
                     } else {
-                        this.errorMessage = 'Não foi possível se conectar ao servidor. Verifique se o backend está rodando na porta 3000.';
+                        this.errorMessage = 'Não foi possível se conectar ao servidor. Verifique se o backend está rodando na porta 4001.';
                     }
                     this.error = true;
                     this.carregando = false;

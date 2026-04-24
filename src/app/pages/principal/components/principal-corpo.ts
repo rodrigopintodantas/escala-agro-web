@@ -7,7 +7,7 @@ import { PrincipalCabecalho } from './principal-cabecalho';
     standalone: true,
     imports: [RippleModule, PrincipalCabecalho],
     template: `
-        <div class="min-h-[90vh] grid grid-cols-1 lg:grid-cols-3">
+        <div class="min-h-[90vh] lg:min-h-0 lg:h-full grid grid-cols-1 lg:grid-cols-3">
             <div class="col-span-1 flex items-center justify-center px-6 lg:px-10 py-12 bg-[rgba(0,20,40,0.95)]">
                 <div class="w-full max-w-xl rounded-2xl bg-white/95 text-surface-900 shadow-2xl p-6 lg:p-8">
                     <principal-cabecalho />

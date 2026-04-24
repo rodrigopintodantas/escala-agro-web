@@ -1,6 +1,6 @@
 ﻿export const environment = {
     production: false,
-    apiUrl: 'http://localhost:3000/api',
+    apiUrl: 'http://localhost:4001/api',
     ambiente: 'local',
     useSimpleAuth: true,
     keyCloakConfig: {
@@ -8,6 +8,6 @@
         urlsso: 'https://sso.apps.tjdft.jus.br/auth/',
         client: 'sgpj-web',
         realm: 'SUDES',
-        urlPattern: /^http:\/\/localhost:3000\/.*$/
+        urlPattern: /^http:\/\/localhost:4001\/.*$/
     }
 };
