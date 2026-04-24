@@ -21,7 +21,7 @@ import { InputTextModule } from 'primeng/inputtext';
         <div class="w-full flex flex-col gap-4">
             <div class="text-center">
                 <img alt="app logo" src="assets/layout/images/logo4.png" class="w-20 mx-auto mb-2" />
-                <div class="text-2xl font-bold text-surface-900">Escala Agro</div>
+                <div class="text-2xl font-bold text-surface-900">Sistema de Gestão de Escalas</div>
                 <div class="text-sm text-surface-600">{{ sistema }}</div>
             </div>
             <div *ngIf="!carregando && error" class="rounded-md border border-red-200 bg-red-50 p-3 text-red-700 text-sm">
@@ -94,7 +94,7 @@ import { InputTextModule } from 'primeng/inputtext';
     `
 })
 export class PrincipalCabecalho {
-    sistema: string = 'Escala Agro';
+    sistema: string = 'SGE';
     labelEntrar = 'Entrar';
     habilitarEntrar = true;
 
@@ -191,6 +191,14 @@ export class PrincipalCabecalho {
 
     logout() {
         this.auth.logout();
+        this.temLogin = false;
+        this.temPerfil = false;
+        this.user = {};
+        this.up = [];
+        this.perfilAtual = undefined;
+        this.loginInput = '';
+        this.error = false;
+        this.carregando = false;
     }
 
     shouldShowTooltip(perfil: any): boolean {

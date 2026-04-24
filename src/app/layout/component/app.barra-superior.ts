@@ -21,7 +21,7 @@ import { AppConfigurator } from './app.configurator';
             </button>
             <a class="app-logo" routerLink="/">
                 <img alt="app logo" src="assets/layout/images/logo4.png" height="30" />
-                <span class="app-name hidden md:inline">ESCALA AGRO</span>
+                <!-- <span class="app-name hidden md:inline">ESCALA AGRO</span> -->
             </a>
         </div>
 
@@ -73,7 +73,7 @@ export class AppBarraSuperior implements OnInit {
     perfil: string = '';
     cartorio: string = '';
     isAmbienteDesenv: boolean = environment.ambiente !== 'production';
-    sistema: string = 'Escala Agro';
+    sistema: string = 'Sistema de Gestão de Escalas';
 
     constructor(
         public layoutService: LayoutService,
