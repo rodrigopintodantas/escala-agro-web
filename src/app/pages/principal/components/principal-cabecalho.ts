@@ -18,91 +18,77 @@ import { InputTextModule } from 'primeng/inputtext';
     standalone: true,
     imports: [RouterModule, StyleClassModule, ButtonModule, RippleModule, NgIf, SelectModule, FormsModule, ProgressBarModule, MessageModule, CommonModule, InputTextModule],
     template: `
-        <div class="relative w-full flex items-center justify-between px-4 py-2 h-[4rem]">
-            <a style="display: flex; align-items: center; flex-shrink: 0;">
-                <img alt="app logo" src="assets/layout/images/logo4.png" style="width: 5rem;" />
-                <span style="font-size: 1.5rem; font-weight: 700; margin-left: 0.5rem; color: var(--v-menuitem-text-color);"> ESCALA AGRO </span>
-            </a>
-
-            <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-3xl font-bold pointer-events-none text-center" style="color: var(--v-menuitem-text-color); max-width: 60%; line-height: 1.2;">
-                <span class="whitespace-pre-line" style="display: inline-block; word-break: break-word; hyphens: auto;">{{ sistema }}</span>
+        <div class="w-full flex flex-col gap-4">
+            <div class="text-center">
+                <img alt="app logo" src="assets/layout/images/logo4.png" class="w-20 mx-auto mb-2" />
+                <div class="text-2xl font-bold text-surface-900">Escala Agro</div>
+                <div class="text-sm text-surface-600">{{ sistema }}</div>
+            </div>
+            <div *ngIf="!carregando && error" class="rounded-md border border-red-200 bg-red-50 p-3 text-red-700 text-sm">
+                <strong>Erro</strong>
+                <p class="mb-2 mt-1">{{ errorMessage || 'Não foi possível se conectar ao servidor.' }}</p>
+                <p-button label="Tentar novamente" severity="danger" icon="pi pi-refresh" (click)="tentarNovamente()"></p-button>
             </div>
 
-            <a pButton [text]="true" severity="secondary" [rounded]="true" pRipple class="lg:!hidden" pStyleClass="@next" enterClass="hidden" leaveToClass="hidden" [hideOnOutsideClick]="true">
-                <i class="pi pi-bars !text-2xl"></i>
-            </a>
+            <div *ngIf="!carregando && !error && !temLogin" class="flex flex-col gap-2">
+                <label for="loginInput" class="text-sm font-medium text-surface-700">Login</label>
+                <input
+                    id="loginInput"
+                    pInputText
+                    type="text"
+                    [(ngModel)]="loginInput"
+                    placeholder="Digite seu login"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    (keyup.enter)="fazerLogin()"
+                />
+                <button
+                    pRipple
+                    type="button"
+                    (click)="fazerLogin()"
+                    [disabled]="!loginInput || loginInput.trim() === ''"
+                    class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    Entrar
+                </button>
+            </div>
 
-            <div class="flex items-center gap-4">
-                <div *ngIf="!carregando && error" class="flex items-center gap-4">
-                    <div class="alert-danger p-2">
-                        <span><strong>Erro</strong></span>
-                        <p class="mb-2">{{ errorMessage || 'Não foi possível se conectar ao servidor.' }}</p>
-                        <p-button label="Tentar novamente" severity="danger" icon="pi pi-refresh" (click)="tentarNovamente()"></p-button>
-                    </div>
-                    <button pRipple type="button" (click)="logout()" class="w-10 h-10 bg-[rgba(0,20,40,0.95)] hover:bg-red-500 text-white rounded-full shadow-md transition-all flex items-center justify-center">
+            <div *ngIf="!carregando && !error && temLogin" class="flex flex-col gap-3">
+                <p class="text-base font-semibold m-0">{{ user?.nome }}</p>
+
+                <div *ngIf="temPerfil && (!up || up.length <= 1)" class="flex items-center gap-2">
+                    <button pRipple type="button" (click)="entrar()" class="flex-1 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-md transition-all">
+                        Entrar
+                    </button>
+                    <button pRipple type="button" (click)="logout()" class="w-10 h-10 bg-[rgba(0,20,40,0.95)] hover:bg-red-500 text-white rounded-md shadow-md transition-all flex items-center justify-center">
                         <i class="pi pi-sign-out text-lg"></i>
                     </button>
                 </div>
 
-                <div *ngIf="!carregando && !error && !temLogin" class="flex items-center gap-2">
-                    <input
-                        pInputText
-                        type="text"
-                        [(ngModel)]="loginInput"
-                        placeholder="Digite seu login"
-                        class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        (keyup.enter)="fazerLogin()"
+                <div *ngIf="temPerfil && up?.length > 1" class="flex flex-col gap-2">
+                    <p-select
+                        [options]="up"
+                        [(ngModel)]="perfilAtual"
+                        optionLabel="label"
+                        placeholder="Escolha o perfil"
+                        class="w-full"
+                        (onChange)="onPerfilChange($event)"
                     />
-                    <button
-                        pRipple
-                        type="button"
-                        (click)="fazerLogin()"
-                        [disabled]="!loginInput || loginInput.trim() === ''"
-                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Entrar
-                    </button>
-                </div>
-
-                <div *ngIf="!carregando && !error && temLogin">
-                    <div *ngIf="temPerfil && (!up || up.length <= 1)" class="flex items-center gap-4">
-                        <p class="text-lg font-semibold leading-normal m-0">{{ user?.nome }}</p>
-                        <button pRipple type="button" (click)="entrar()" class="text-xl px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md transition-all">Entrar</button>
-                        <button pRipple type="button" (click)="logout()" class="w-10 h-10 bg-[rgba(0,20,40,0.95)] hover:bg-red-500 text-white rounded-full shadow-md transition-all flex items-center justify-center">
+                    <div class="flex items-center gap-2">
+                        <button
+                            pRipple
+                            type="button"
+                            (click)="entrar()"
+                            [disabled]="!perfilAtual"
+                            class="flex-1 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Entrar
+                        </button>
+                        <button pRipple type="button" (click)="logout()" class="w-10 h-10 bg-[rgba(0,20,40,0.95)] hover:bg-red-500 text-white rounded-md shadow-md transition-all flex items-center justify-center">
                             <i class="pi pi-sign-out text-lg"></i>
                         </button>
                     </div>
-
-                    <div *ngIf="temPerfil && up?.length > 1" class="flex flex-col gap-2 items-start">
-                        <p class="text-lg font-semibold leading-normal m-0">{{ user?.nome }}</p>
-                        <div class="flex items-center gap-4">
-                            <div class="relative group">
-                                <p-select
-                                    [options]="up"
-                                    [(ngModel)]="perfilAtual"
-                                    optionLabel="label"
-                                    placeholder="Escolha o perfil"
-                                    class="w-full md:w-56 border border-blue-600 focus:ring-blue-600 focus:border-blue-600 shadow-sm rounded-md"
-                                    (onChange)="onPerfilChange($event)"
-                                />
-                            </div>
-                            <button
-                                pRipple
-                                type="button"
-                                (click)="entrar()"
-                                [disabled]="!perfilAtual"
-                                class="text-xl px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                Entrar
-                            </button>
-                            <button pRipple type="button" (click)="logout()" class="w-10 h-10 bg-[rgba(0,20,40,0.95)] hover:bg-red-500 text-white rounded-full shadow-md transition-all flex items-center justify-center">
-                                <i class="pi pi-sign-out text-lg"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <p-button *ngIf="!temPerfil" [disabled]="true" label="usuário sem perfil cadastrado no sistema"></p-button>
                 </div>
+                <p-button *ngIf="!temPerfil" [disabled]="true" label="Usuário sem perfil cadastrado no sistema"></p-button>
             </div>
         </div>
     `
