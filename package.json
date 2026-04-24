@@ -1,4 +1,4 @@
-﻿{
+{
     "name": "escala-agro-web",
     "version": "19.0.1",
     "scripts": {
@@ -21,6 +21,8 @@
         "@angular/router": "^19.0.0",
         "@primeng/themes": "^19.0.5",
         "chart.js": "4.4.2",
+        "jspdf": "^4.2.1",
+        "jspdf-autotable": "^5.0.7",
         "keycloak-angular": "^19.0.2",
         "keycloak-js": "^26.1.3",
         "primeclt": "^0.1.5",

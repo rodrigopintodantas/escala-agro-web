@@ -55,6 +55,14 @@
         </div>
         <div class="flex flex-col items-end gap-2">
             <p-tag [value]="labelStatusEscala(escala.status)" [severity]="severityStatus(escala.status)" styleClass="text-sm px-3 py-1" />
+            <button
+                pButton
+                type="button"
+                icon="pi pi-file-pdf"
+                label="Gerar PDF"
+                class="p-button-sm"
+                (click)="gerarPdfEscala()"
+            ></button>
             <span class="text-sm text-color-secondary">
                 {{ formatarDataCurta(escala.dataInicio) }} — {{ formatarDataCurta(escala.dataFim) }}
             </span>

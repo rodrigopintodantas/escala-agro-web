@@ -10,6 +10,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { RippleModule } from 'primeng/ripple';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import {
     EscalaApiService,
     EscalaDetalhe,
@@ -334,9 +336,62 @@ export class VerEscalaComponent implements OnInit {
         return Number.isNaN(n) ? null : n;
     }
 
+    private escalaEstaAtiva(): boolean {
+        return String(this.escala?.status || '').toLowerCase() === 'ativa';
+    }
+
+    gerarPdfEscala(): void {
+        if (!this.escala) {
+            return;
+        }
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const titulo = `Escala: ${this.escala.nome}`;
+        const periodo = `${this.formatarDataCurta(this.escala.dataInicio)} a ${this.formatarDataCurta(this.escala.dataFim)}`;
+        doc.setFontSize(14);
+        doc.text(titulo, 14, 14);
+        doc.setFontSize(10);
+        doc.text(`Período: ${periodo}`, 14, 20);
+        doc.text(`Status: ${this.labelStatusEscala(this.escala.status)}`, 14, 25);
+
+        const dias = this.agruparPlantoesPorDia(this.plantoes);
+        const body = dias.map((dia) => [
+            this.formatarDataCurta(dia.dataReferencia),
+            dia.plantaoVet ? this.rotuloExibicaoPlantao(dia.plantaoVet) : '—',
+            dia.plantoesTec[0] ? this.rotuloExibicaoPlantao(dia.plantoesTec[0]) : '—',
+            dia.plantoesTec[1] ? this.rotuloExibicaoPlantao(dia.plantoesTec[1]) : '—'
+        ]);
+
+        autoTable(doc, {
+            startY: 30,
+            head: [['Data', 'Veterinário', 'Técnico 1', 'Técnico 2']],
+            body,
+            styles: { fontSize: 9, cellPadding: 2 },
+            headStyles: { fillColor: [34, 72, 190] },
+            theme: 'grid'
+        });
+
+        const paginas = doc.getNumberOfPages();
+        const horarioGeracao = new Date().toLocaleString('pt-BR');
+        for (let p = 1; p <= paginas; p++) {
+            doc.setPage(p);
+            doc.setFontSize(9);
+            doc.text(`Gerado em: ${horarioGeracao}`, 14, 290);
+            doc.text(`Dias com plantão: ${this.quantidadeDiasComPlantao}`, 196, 290, { align: 'right' });
+        }
+
+        const nomeArquivoBase = String(this.escala.nome || 'escala')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-zA-Z0-9_-]/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '')
+            .toLowerCase();
+        doc.save(`${nomeArquivoBase || 'escala'}.pdf`);
+    }
+
     /** Alinhado ao texto gravado em `plantao.observacao` no recálculo por atestado. */
     rotuloExibicaoPlantao(p: PlantaoDetalhe): string {
-        if (p.usuario?.suspensoEscala) {
+        if (this.escalaEstaAtiva() && p.usuario?.suspensoEscala) {
             return 'Gestão - Servidor Suspenso da Escala';
         }
         const obs = p.observacao?.trim();
@@ -393,7 +448,7 @@ export class VerEscalaComponent implements OnInit {
     }
 
     mensagemAlteracaoPlantao(p: PlantaoDetalhe): string | null {
-        if (p.usuario?.suspensoEscala) {
+        if (this.escalaEstaAtiva() && p.usuario?.suspensoEscala) {
             return 'Gestão - Servidor Suspenso da Escala';
         }
         const obs = p.observacao?.trim();
