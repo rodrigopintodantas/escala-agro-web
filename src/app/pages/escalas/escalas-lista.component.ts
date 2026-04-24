@@ -20,8 +20,8 @@ import {
 } from '../../service/escala-api.service';
 
 export interface FeriadoCadastradoItem {
-    plantaoId: number;
     iso: string;
+    plantaoIds: number[];
 }
 
 export type EscalasListaModo = 'admin' | 'veterinario';
@@ -68,9 +68,9 @@ export class EscalasListaComponent implements OnInit {
      * Plantões em dias que não são sábado/domingo (feriados / pontos facultativos na escala).
      */
     feriadosCadastrados: FeriadoCadastradoItem[] = [];
-    /** Plantão selecionado no dropdown para remoção (uma por vez). */
-    plantaoSelecionadoParaRemocao: number | null = null;
-    removerFeriadoCarregandoId: number | null = null;
+    /** Data ISO selecionada no dropdown para remoção (remove todos os plantões do dia). */
+    plantaoSelecionadoParaRemocao: string | null = null;
+    removerFeriadoCarregandoId: string | null = null;
     /** Dias do período que ainda não têm plantão (inclusão uma data por vez). */
     opcoesNovasDatasEscala: { iso: string; exibicao: string }[] = [];
     /** ISO AAAA-MM-DD da data escolhida no dropdown para incluir. */
@@ -247,7 +247,7 @@ export class EscalasListaComponent implements OnInit {
     private montarListasParaDialogoExtras(det: EscalaDetalhe): void {
         const plantoes = det.plantoes || [];
         const existentes = new Set<string>();
-        const feriados: FeriadoCadastradoItem[] = [];
+        const feriadosPorIso = new Map<string, number[]>();
 
         for (const p of plantoes) {
             const iso = this.plantaoDataReferenciaParaIso(p.dataReferencia);
@@ -256,9 +256,15 @@ export class EscalasListaComponent implements OnInit {
             }
             existentes.add(iso);
             if (!this.isFimDeSemanaIso(iso)) {
-                feriados.push({ plantaoId: p.id, iso });
+                const ids = feriadosPorIso.get(iso) || [];
+                ids.push(Number(p.id));
+                feriadosPorIso.set(iso, ids);
             }
         }
+        const feriados: FeriadoCadastradoItem[] = Array.from(feriadosPorIso.entries()).map(([iso, plantaoIds]) => ({
+            iso,
+            plantaoIds: [...new Set(plantaoIds)]
+        }));
         feriados.sort((a, b) => a.iso.localeCompare(b.iso));
         this.feriadosCadastrados = feriados;
 
@@ -293,16 +299,16 @@ export class EscalasListaComponent implements OnInit {
         }
         if (
             this.plantaoSelecionadoParaRemocao != null &&
-            !feriados.some((f) => f.plantaoId === this.plantaoSelecionadoParaRemocao)
+            !feriados.some((f) => f.iso === this.plantaoSelecionadoParaRemocao)
         ) {
             this.plantaoSelecionadoParaRemocao = null;
         }
     }
 
-    opcoesDropdownFeriadosRemover(): { label: string; value: number }[] {
+    opcoesDropdownFeriadosRemover(): { label: string; value: string }[] {
         return this.feriadosCadastrados.map((f) => ({
             label: this.labelFeriadoParaDropdown(f.iso),
-            value: f.plantaoId
+            value: f.iso
         }));
     }
 
@@ -374,31 +380,33 @@ export class EscalasListaComponent implements OnInit {
         if (this.bloqueadoDialogExtras) {
             return;
         }
-        const pid = this.plantaoSelecionadoParaRemocao;
-        if (pid == null || !this.escalaEditarExtras) {
+        const isoSelecionado = this.plantaoSelecionadoParaRemocao;
+        if (isoSelecionado == null || !this.escalaEditarExtras) {
             return;
         }
-        const item = this.feriadosCadastrados.find((f) => f.plantaoId === pid);
+        const item = this.feriadosCadastrados.find((f) => f.iso === isoSelecionado);
         if (!item) {
             return;
         }
+        const qtdPlantoes = item.plantaoIds.length;
+        const textoQtdPlantoes = qtdPlantoes === 1 ? '1 plantão' : `${qtdPlantoes} plantões`;
         this.confirm.confirm({
-            message: `Remover o plantão de ${this.rotuloDataIsoCurto(item.iso)}? O rodízio será recalculado a partir dessa data. Permutas pendentes ligadas a essa data serão excluídas.`,
+            message: `Remover ${textoQtdPlantoes} de ${this.rotuloDataIsoCurto(item.iso)}? O rodízio será recalculado a partir dessa data. Permutas pendentes ligadas a essa data serão excluídas.`,
             header: 'Remover data',
             icon: 'pi pi-exclamation-triangle',
             acceptLabel: 'Remover',
             rejectLabel: 'Cancelar',
             acceptButtonStyleClass: 'p-button-danger',
-            accept: () => this.executarRemoverFeriado(pid, item.iso)
+            accept: () => this.executarRemoverFeriado(item.plantaoIds, item.iso)
         });
     }
 
-    private executarRemoverFeriado(plantaoId: number, isoRef: string): void {
+    private executarRemoverFeriado(plantaoIds: number[], isoRef: string): void {
         if (!this.escalaEditarExtras) {
             return;
         }
-        this.removerFeriadoCarregandoId = plantaoId;
-        this.api.removerPlantoesFeriadosFacultativos(this.escalaEditarExtras.id, [plantaoId]).subscribe({
+        this.removerFeriadoCarregandoId = isoRef;
+        this.api.removerPlantoesFeriadosFacultativos(this.escalaEditarExtras.id, plantaoIds).subscribe({
             next: (res: RemoverPlantoesFeriadosResposta) => {
                 this.removerFeriadoCarregandoId = null;
                 this.plantaoSelecionadoParaRemocao = null;
