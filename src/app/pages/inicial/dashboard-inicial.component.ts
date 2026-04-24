@@ -41,17 +41,18 @@ interface BlocoMesPlantoes {
                     <p class="m-0 text-red-600 dark:text-red-400">{{ erroCarregamento }}</p>
                 </p-card>
 
-                <p-card *ngIf="!carregando && !erroCarregamento && !escalaAtiva" header="Próximos plantões">
-                    <p class="m-0 text-color-secondary">Não há escala ativa no momento.</p>
-                </p-card>
-
-                <ng-container *ngIf="!carregando && !erroCarregamento && escalaAtiva">
-                    <div class="text-sm text-color-secondary mb-4">
+                <ng-container *ngIf="!carregando && !erroCarregamento">
+                    <div *ngIf="escalaAtiva; else semEscalaAtivaInfo" class="text-sm text-color-secondary mb-4">
                         Escala ativa: <strong>{{ escalaAtiva.nome }}</strong> ({{ formatarPeriodo(escalaAtiva.dataInicio, escalaAtiva.dataFim) }})
                     </div>
+                    <ng-template #semEscalaAtivaInfo>
+                        <p-card header="Próximos plantões" styleClass="mb-4">
+                            <p class="m-0 text-color-secondary">Não há escala ativa no momento.</p>
+                        </p-card>
+                    </ng-template>
 
                     <div class="flex flex-col gap-4">
-                        <p-card header="Próximos plantões">
+                        <p-card header="Próximos plantões" *ngIf="escalaAtiva">
                             <ng-container *ngIf="proximosPlantoesPorMes.length; else semProximosPlantoes">
                                 <div class="flex flex-col gap-4">
                                     <section
@@ -124,7 +125,7 @@ interface BlocoMesPlantoes {
                                 </div>
                             </ng-container>
                             <ng-template #semAfastamentos>
-                                <p class="m-0 text-color-secondary">Nenhum afastamento cadastrado no período da escala ativa.</p>
+                                <p class="m-0 text-color-secondary">Nenhum afastamento cadastrado.</p>
                             </ng-template>
                         </p-card>
                     </div>

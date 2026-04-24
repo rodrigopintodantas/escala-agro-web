@@ -13,7 +13,7 @@
             </p>
         </div>
         <button
-            *ngIf="carregarAutomaticamente"
+            *ngIf="carregarAutomaticamente && !existeEscalaAtiva"
             pButton
             type="button"
             icon="pi pi-save"
@@ -49,6 +49,10 @@
         ></button>
     </div>
 
+    <p class="text-sm text-color-secondary m-0 mb-4" *ngIf="exibirCabecalho && existeEscalaAtiva">
+        Há escala ativa no momento. A alteração da ordem dos servidores fica disponível apenas quando não houver escalas ativas.
+    </p>
+
     <div class="flex flex-col gap-2" *ngIf="!exibirCabecalho">
         <label>Ordem dos servidores *</label>
         <p class="text-sm text-color-secondary m-0">
@@ -62,7 +66,7 @@
                 <th style="width: 6rem">Ordem</th>
                 <th>Servidor</th>
                 <th>Login</th>
-                <th style="width: 8rem">Ações</th>
+                <th style="width: 8rem" *ngIf="!existeEscalaAtiva">Ações</th>
             </tr>
         </ng-template>
 
@@ -71,9 +75,10 @@
                 <td>{{ i + 1 }}</td>
                 <td>{{ item.nome }}</td>
                 <td>{{ item.login }}</td>
-                <td>
+                <td *ngIf="!existeEscalaAtiva">
                     <div class="flex gap-1">
                         <button
+                            *ngIf="!existeEscalaAtiva"
                             pButton
                             type="button"
                             icon="pi pi-arrow-up"
@@ -83,6 +88,7 @@
                             aria-label="Mover para cima"
                         ></button>
                         <button
+                            *ngIf="!existeEscalaAtiva"
                             pButton
                             type="button"
                             icon="pi pi-arrow-down"

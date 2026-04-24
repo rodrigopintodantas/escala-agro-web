@@ -29,6 +29,7 @@ export class OrdemServidoresComponent implements OnInit {
 
     carregando = false;
     salvando = false;
+    existeEscalaAtiva = false;
     private ordemOriginalIds: number[] = [];
 
     get ordemFoiAlterada(): boolean {
@@ -51,6 +52,7 @@ export class OrdemServidoresComponent implements OnInit {
             return;
         }
 
+        this.carregarBloqueioEdicaoPorEscalaAtiva();
         this.carregarListaPorEscopo();
     }
 
@@ -75,6 +77,17 @@ export class OrdemServidoresComponent implements OnInit {
             error: () => {
                 this.carregando = false;
                 this.msg.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar a ordem dos servidores.' });
+            }
+        });
+    }
+
+    private carregarBloqueioEdicaoPorEscalaAtiva(): void {
+        this.api.listar().subscribe({
+            next: (escalas) => {
+                this.existeEscalaAtiva = (escalas || []).some((e) => String(e.status || '').toLowerCase() === 'ativa');
+            },
+            error: () => {
+                this.existeEscalaAtiva = false;
             }
         });
     }
