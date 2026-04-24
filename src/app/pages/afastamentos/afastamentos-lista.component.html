@@ -19,7 +19,7 @@
     <p-table [value]="afastamentos" [loading]="carregando" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '50rem' }">
         <ng-template pTemplate="header">
             <tr>
-                <th *ngIf="modo === 'admin'">Veterinário</th>
+                <th *ngIf="modo === 'admin'">Servidor</th>
                 <th>Tipo</th>
                 <th>Data início</th>
                 <th>Data fim</th>
@@ -30,7 +30,7 @@
             <tr>
                 <td *ngIf="modo === 'admin'">
                     <span class="font-medium">{{ row.usuario?.nome || '—' }}</span>
-                    <span class="text-color-secondary text-sm" *ngIf="row.usuario?.login"> · {{ row.usuario.login }}</span>
+                    <span class="text-color-secondary text-sm" *ngIf="papelServidor(row.usuarioId)"> · {{ papelServidor(row.usuarioId) }}</span>
                 </td>
                 <td>{{ labelTipo(row) }}</td>
                 <td>{{ formatoData(row.dataInicio) }}</td>
@@ -70,7 +70,7 @@
     <ng-template pTemplate="content">
         <div class="flex flex-col gap-4">
             <div class="flex flex-col gap-2" *ngIf="modo === 'admin'">
-                <label for="afUser" class="font-medium">Veterinário *</label>
+                <label for="afUser" class="font-medium">Servidor *</label>
                 <p-dropdown
                     inputId="afUser"
                     [options]="opcoesUsuarioDropdown()"
@@ -132,7 +132,7 @@
             icon="pi pi-check"
             (click)="salvar()"
             [loading]="salvando"
-            [disabled]="salvando || tipos.length === 0 || (modo === 'admin' && veterinarios.length === 0)"
+            [disabled]="salvando || tipos.length === 0 || (modo === 'admin' && servidores.length === 0)"
         ></button>
     </ng-template>
 </p-dialog>

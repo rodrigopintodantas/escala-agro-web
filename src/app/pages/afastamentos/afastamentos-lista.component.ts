@@ -19,6 +19,7 @@ import {
 } from '../../service/afastamento-api.service';
 import { EscalaApiService, VeterinarioOption } from '../../service/escala-api.service';
 import { AutenticacaoService } from '../../service/autenticacao.service';
+import { forkJoin } from 'rxjs';
 
 export type AfastamentosListaModo = 'admin' | 'veterinario';
 
@@ -50,7 +51,7 @@ export class AfastamentosListaComponent implements OnInit {
 
     afastamentos: AfastamentoListagem[] = [];
     tipos: TipoAfastamento[] = [];
-    veterinarios: VeterinarioOption[] = [];
+    servidores: Array<VeterinarioOption & { papel: 'Veterinário' | 'Técnico' }> = [];
     carregando = true;
     modo: AfastamentosListaModo = 'veterinario';
 
@@ -68,7 +69,7 @@ export class AfastamentosListaComponent implements OnInit {
         const m = this.route.snapshot.data['afastamentosModo'];
         if (m === 'admin') {
             this.modo = 'admin';
-            this.carregarVeterinarios();
+            this.carregarServidores();
         }
         this.carregarTipos();
         this.carregarAfastamentos();
@@ -95,17 +96,28 @@ export class AfastamentosListaComponent implements OnInit {
         });
     }
 
-    private carregarVeterinarios(): void {
-        this.escalaApi.listarVeterinarios().subscribe({
+    private carregarServidores(): void {
+        forkJoin({
+            veterinarios: this.escalaApi.listarVeterinarios(),
+            tecnicos: this.escalaApi.listarTecnicos()
+        }).subscribe({
             error: () => {
                 this.msg.add({
                     severity: 'warn',
                     summary: 'Aviso',
-                    detail: 'Não foi possível carregar a lista de veterinários.'
+                    detail: 'Não foi possível carregar a lista de servidores.'
                 });
             },
-            next: (v) => {
-                this.veterinarios = v;
+            next: ({ veterinarios, tecnicos }) => {
+                const base = [
+                    ...veterinarios.map((v) => ({ ...v, papel: 'Veterinário' as const })),
+                    ...tecnicos.map((t) => ({ ...t, papel: 'Técnico' as const }))
+                ];
+                this.servidores = [...base].sort((a, b) => {
+                    const nomeCmp = String(a.nome || '').localeCompare(String(b.nome || ''), 'pt-BR');
+                    if (nomeCmp !== 0) return nomeCmp;
+                    return a.papel.localeCompare(b.papel, 'pt-BR');
+                });
             }
         });
     }
@@ -208,7 +220,7 @@ export class AfastamentosListaComponent implements OnInit {
             return;
         }
         if (this.modo === 'admin' && (this.usuarioIdSelecionado == null || !Number.isFinite(this.usuarioIdSelecionado))) {
-            this.msg.add({ severity: 'warn', summary: 'Validação', detail: 'Selecione o veterinário.' });
+            this.msg.add({ severity: 'warn', summary: 'Validação', detail: 'Selecione o servidor.' });
             return;
         }
 
@@ -263,10 +275,13 @@ export class AfastamentosListaComponent implements OnInit {
     }
 
     opcoesUsuarioDropdown(): { label: string; value: number }[] {
-        return this.veterinarios.map((v) => ({
-            label: `${v.nome}${v.login ? ` (${v.login})` : ''}`,
-            value: v.id
-        }));
+        return this.servidores.map((s) => ({ label: `${s.nome} - ${s.papel}`, value: s.id }));
+    }
+
+    papelServidor(id: number | null | undefined): string | null {
+        if (id == null) return null;
+        const row = this.servidores.find((s) => Number(s.id) === Number(id));
+        return row?.papel || null;
     }
 
     confirmarDesfazer(row: AfastamentoListagem): void {
