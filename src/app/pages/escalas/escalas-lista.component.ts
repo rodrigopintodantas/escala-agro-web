@@ -180,7 +180,7 @@ export class EscalasListaComponent implements OnInit {
     confirmarConcluirEscala(row: EscalaListagem): void {
         this.confirm.confirm({
             message:
-                `Concluir a escala "${row.nome}"? O status passará a Concluída e a ordem global dos veterinários será atualizada para o próximo ciclo começar pelo veterinário seguinte àquele que possui o último plantão (por data). Permutas pendentes nesta escala serão canceladas.`,
+                `A ordem global dos servidores será atualizada para o próximo ciclo começar pelo veterinário seguinte àquele que possui o último plantão (por data).`,
             header: 'Concluir escala',
             icon: 'pi pi-flag',
             acceptLabel: 'Concluir',

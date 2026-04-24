@@ -20,6 +20,7 @@ export class OrdemServidoresComponent implements OnInit {
 
     /** `veterinario` ou `tecnico` — pode vir da rota (`data.ordemEscopo`). */
     escopoOrdem: 'veterinario' | 'tecnico' = 'veterinario';
+    exibirAbasEscopo = false;
 
     @Input() servidores: VeterinarioOption[] = [];
     @Input() exibirCabecalho = true;
@@ -40,12 +41,30 @@ export class OrdemServidoresComponent implements OnInit {
         const dataEscopo = this.route.snapshot.data['ordemEscopo'];
         if (dataEscopo === 'tecnico') {
             this.escopoOrdem = 'tecnico';
+        } else if (dataEscopo === 'veterinario') {
+            this.escopoOrdem = 'veterinario';
+        } else {
+            this.exibirAbasEscopo = true;
         }
 
         if (!this.carregarAutomaticamente) {
             return;
         }
 
+        this.carregarListaPorEscopo();
+    }
+
+    trocarEscopo(escopo: 'veterinario' | 'tecnico'): void {
+        if (this.escopoOrdem === escopo || this.carregando || this.salvando) {
+            return;
+        }
+        this.escopoOrdem = escopo;
+        if (this.carregarAutomaticamente) {
+            this.carregarListaPorEscopo();
+        }
+    }
+
+    private carregarListaPorEscopo(): void {
         this.carregando = true;
         this.api.listarOrdemServidores(this.escopoOrdem).subscribe({
             next: (lista) => {

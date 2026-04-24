@@ -20,15 +20,14 @@ export const appRoutes: Routes = [
             },
             {
                 path: 'ordem-servidores',
-                data: { breadcrumb: 'Ordem dos veterinários', ordemEscopo: 'veterinario' as const },
+                data: { breadcrumb: 'Ordem dos servidores' },
                 loadComponent: () =>
                     import('./app/pages/ordem/ordem-servidores.component').then((c) => c.OrdemServidoresComponent)
             },
             {
                 path: 'ordem-tecnicos',
-                data: { breadcrumb: 'Ordem dos técnicos', ordemEscopo: 'tecnico' as const },
-                loadComponent: () =>
-                    import('./app/pages/ordem/ordem-servidores.component').then((c) => c.OrdemServidoresComponent)
+                redirectTo: 'ordem-servidores',
+                pathMatch: 'full'
             },
             {
                 path: 'escalas/criar',

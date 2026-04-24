@@ -65,14 +65,9 @@ export class AppMenu implements OnInit {
                     routerLink: ['/admin']
                 },
                 {
-                    label: 'Ordem veterinários',
+                    label: 'Ordem dos Servidores',
                     icon: 'pi pi-sort-alt',
                     routerLink: ['/admin/ordem-servidores']
-                },
-                {
-                    label: 'Ordem técnicos',
-                    icon: 'pi pi-sort-alt',
-                    routerLink: ['/admin/ordem-tecnicos']
                 },
                 {
                     label: 'Escalas',
