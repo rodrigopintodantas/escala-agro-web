@@ -28,7 +28,7 @@ interface BlocoMesPlantoes {
     template: `
         <div class="p-4">
             <ng-container *ngIf="ehAreaAdmin; else dashboardPadrao">
-                <div class="flex items-center justify-between mb-4 gap-3">
+                <div class="flex flex-wrap items-center justify-between mb-4 gap-3">
                     <h1 class="text-2xl font-semibold m-0">Dashboard administrativo</h1>
                     <p-tag *ngIf="escalaAtiva" value="Escala ativa encontrada" severity="success" />
                 </div>
@@ -66,26 +66,26 @@ interface BlocoMesPlantoes {
                                         <ul class="list-none m-0 p-0 divide-y divide-surface-200 dark:divide-surface-700">
                                             <li
                                                 *ngFor="let dia of bloco.itens"
-                                                class="flex flex-wrap items-center justify-between gap-3 px-5 py-4 bg-surface-0 dark:bg-surface-900"
+                                                class="flex flex-wrap items-center justify-between gap-3 px-3 sm:px-5 py-4 bg-surface-0 dark:bg-surface-900"
                                             >
-                                                <div class="flex flex-1 flex-wrap items-start gap-6">
+                                                <div class="flex flex-1 flex-wrap items-start gap-3 sm:gap-6 min-w-0">
                                                     <div class="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/40 text-primary-800 dark:text-primary-200">
                                                         <span class="text-xs font-medium leading-none opacity-80">{{ diaSemana(dia.dataReferencia) }}</span>
                                                         <span class="text-lg font-bold leading-tight">{{ diaNumero(dia.dataReferencia) }}</span>
                                                     </div>
-                                                    <div class="min-w-[14rem]">
+                                                    <div class="w-full sm:w-auto sm:min-w-[14rem]">
                                                         <div class="text-color-secondary text-sm uppercase tracking-wide">Data</div>
                                                         <div class="text-base">{{ formatarDataCompleta(dia.dataReferencia) }}</div>
                                                     </div>
                                                     <div class="flex flex-1 flex-wrap gap-3 min-w-0">
                                                         <div
-                                                            class="min-w-[11rem] flex-1 rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-50/70 dark:bg-surface-800/40 px-3 py-2"
+                                                            class="w-full sm:min-w-[11rem] flex-1 rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-50/70 dark:bg-surface-800/40 px-3 py-2"
                                                         >
                                                             <div class="text-color-secondary text-xs uppercase tracking-wide mb-1">Veterinário</div>
                                                             <div class="text-sm font-medium">{{ dia.linhaVeterinario }}</div>
                                                         </div>
                                                         <div
-                                                            class="min-w-[11rem] flex-1 rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-50/70 dark:bg-surface-800/40 px-3 py-2"
+                                                            class="w-full sm:min-w-[11rem] flex-1 rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-50/70 dark:bg-surface-800/40 px-3 py-2"
                                                         >
                                                             <div class="text-color-secondary text-xs uppercase tracking-wide mb-1">Técnicos</div>
                                                             <ng-container *ngIf="dia.linhasTecnicos.length; else semTecnicosDash">

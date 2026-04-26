@@ -18,6 +18,36 @@ import { LayoutService } from '../../../layout/service/layout.service';
     },
     styles: [
         `
+            .status-admin-bg {
+                background-color: #f3f4f6;
+            }
+            .status-admin-grid {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr);
+            }
+            .status-admin-col {
+                min-width: 0;
+                display: flex;
+            }
+            .status-admin-icon-wrap {
+                background-color: rgba(59, 130, 246, 0.1);
+            }
+            .status-admin-icon-blue {
+                color: #3b82f6;
+            }
+
+            @media (min-width: 1024px) {
+                .status-admin-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+            }
+
+            @media (max-width: 767px) {
+                .status-admin-col {
+                    width: 100%;
+                }
+            }
+
             .info-card-blue {
                 transition:
                     transform 0.3s ease,
