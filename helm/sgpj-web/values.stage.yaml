@@ -5,10 +5,11 @@ fqdn: escala-agro.apps.tjdft.jus.br
 extraRouteLabels:
     intranet-stage: 'true'
 env:
-    apiUrl: http://escala-agro.apps.tjdft.jus.br/api
-    baseUrl: http://escala-agro.apps.tjdft.jus.br/
+    apiUrl: https://escala-agro.apps.tjdft.jus.br/api
+    baseUrl: https://escala-agro.apps.tjdft.jus.br/
     production: 'false'
     ambiente: 'stage'
+    useSimpleAuth: 'true'
 
 resources:
     limits:

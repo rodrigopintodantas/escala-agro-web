@@ -1,13 +1,15 @@
 environment: production
 
-fqdn: escala-agro.tjdft.jus.br
+fqdn: sgea.digital
 
 extraRouteLabels:
     intranet: 'true'
 env:
-    apiUrl: http://escala-agro.tjdft.jus.br/api
-    baseUrl: http://escala-agro.tjdft.jus.br/
+    apiUrl: https://sgea.digital/api
+    baseUrl: https://sgea.digital/
     production: 'true'
+    ambiente: 'production'
+    useSimpleAuth: 'true'
 
 resources:
     limits:
