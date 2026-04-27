@@ -20,7 +20,7 @@ import { InputTextModule } from 'primeng/inputtext';
     template: `
         <div class="w-full flex flex-col gap-4">
             <div class="text-center">
-                <img alt="app logo" src="assets/layout/images/logo4.png" class="w-20 mx-auto mb-2" />
+                <!-- <img alt="app logo" src="assets/layout/images/logo4.png" class="w-20 mx-auto mb-2" /> -->
                 <div class="text-2xl font-bold text-surface-900">Sistema de Gestão de Escalas</div>
                 <div class="text-sm text-surface-600">{{ sistema }}</div>
             </div>
@@ -94,7 +94,7 @@ import { InputTextModule } from 'primeng/inputtext';
     `
 })
 export class PrincipalCabecalho {
-    sistema: string = 'SGE';
+    sistema: string = 'SGEA';
     labelEntrar = 'Entrar';
     habilitarEntrar = true;
 
