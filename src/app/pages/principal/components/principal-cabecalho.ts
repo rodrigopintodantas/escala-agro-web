@@ -41,11 +41,21 @@ import { InputTextModule } from 'primeng/inputtext';
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     (keyup.enter)="fazerLogin()"
                 />
+                <label for="senhaInput" class="text-sm font-medium text-surface-700">Senha</label>
+                <input
+                    id="senhaInput"
+                    pInputText
+                    type="password"
+                    [(ngModel)]="senhaInput"
+                    placeholder="Digite sua senha"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    (keyup.enter)="fazerLogin()"
+                />
                 <button
                     pRipple
                     type="button"
                     (click)="fazerLogin()"
-                    [disabled]="!loginInput || loginInput.trim() === ''"
+                    [disabled]="!loginInput || loginInput.trim() === '' || !senhaInput || senhaInput.trim() === ''"
                     class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     Entrar
@@ -111,6 +121,7 @@ export class PrincipalCabecalho {
     error: boolean = false;
     errorMessage: string = '';
     loginInput: string = '';
+    senhaInput: string = '';
     temLogin: boolean = false;
 
     isLocalEnvironment = environment.ambiente !== 'production';
@@ -197,6 +208,7 @@ export class PrincipalCabecalho {
         this.up = [];
         this.perfilAtual = undefined;
         this.loginInput = '';
+        this.senhaInput = '';
         this.error = false;
         this.carregando = false;
     }
@@ -208,51 +220,64 @@ export class PrincipalCabecalho {
     onPerfilChange(event: any) {}
 
     fazerLogin() {
-        if (!this.loginInput || this.loginInput.trim() === '') {
+        if (!this.loginInput || this.loginInput.trim() === '' || !this.senhaInput || this.senhaInput.trim() === '') {
             return;
         }
 
         this.carregando = true;
         this.error = false;
-        this.auth.login(this.loginInput.trim());
+        this.auth.login(this.loginInput.trim(), this.senhaInput).subscribe({
+            next: () => {
+                this.auth.carregarPerfil().subscribe({
+                    next: () => {
+                        this.temLogin = true;
+                        this.user = this.auth.getUsuario();
+                        this.temPerfil = this.auth.temPerfil();
+                        this.up = this.auth.getPerfis();
 
-        setTimeout(() => {
-            this.auth.carregarPerfil().subscribe({
-                next: () => {
-                    this.temLogin = true;
-                    this.user = this.auth.getUsuario();
-                    this.temPerfil = this.auth.temPerfil();
-                    this.up = this.auth.getPerfis();
+                        if (this.up && this.up.length > 0) {
+                            this.up = this.up.map((perfil: any) => ({
+                                ...perfil,
+                                label: perfil.nome
+                            }));
 
-                    if (this.up && this.up.length > 0) {
-                        this.up = this.up.map((perfil: any) => ({
-                            ...perfil,
-                            label: perfil.nome
-                        }));
-
-                        if (this.up.length === 1) {
-                            this.perfilAtual = this.up[0];
-                        } else {
-                            this.perfilAtual = undefined;
+                            if (this.up.length === 1) {
+                                this.perfilAtual = this.up[0];
+                            } else {
+                                this.perfilAtual = undefined;
+                            }
                         }
-                    }
 
-                    this.carregando = false;
-                },
-                error: (error) => {
-                    if (error && error.error && error.error.message) {
-                        this.errorMessage = error.error.message;
-                    } else if (error && error.message) {
-                        this.errorMessage = error.message;
-                    } else {
-                        this.errorMessage = 'Não foi possível se conectar ao servidor. Verifique se o backend está rodando na porta 4001.';
+                        this.carregando = false;
+                    },
+                    error: (error) => {
+                        if (error && error.error && error.error.message) {
+                            this.errorMessage = error.error.message;
+                        } else if (error && error.message) {
+                            this.errorMessage = error.message;
+                        } else {
+                            this.errorMessage = 'Não foi possível se conectar ao servidor. Verifique se o backend está rodando na porta 4001.';
+                        }
+                        this.error = true;
+                        this.carregando = false;
+                        this.temLogin = false;
+                        this.auth.logout();
                     }
-                    this.error = true;
-                    this.carregando = false;
-                    this.temLogin = false;
-                    this.auth.logout();
+                });
+            },
+            error: (error) => {
+                if (error && error.error && error.error.message) {
+                    this.errorMessage = error.error.message;
+                } else if (error && error.message) {
+                    this.errorMessage = error.message;
+                } else {
+                    this.errorMessage = 'Login ou senha inválidos.';
                 }
-            });
-        }, 100);
+                this.error = true;
+                this.carregando = false;
+                this.temLogin = false;
+                this.auth.logout();
+            }
+        });
     }
 }

@@ -12,6 +12,7 @@ export class AutenticacaoService {
     authenticated = false;
     user: Usuario = {};
     private userLogin: string | null = null;
+    private authToken: string | null = null;
 
     private apiURL = `${environment.apiUrl}/auth`;
     private http = inject(HttpClient);
@@ -19,18 +20,34 @@ export class AutenticacaoService {
     constructor() {
         const storedUser = sessionStorage.getItem('user');
         const storedLogin = sessionStorage.getItem('userLogin');
-        if (storedUser && storedLogin) {
+        const storedToken = sessionStorage.getItem('authToken');
+        if (storedUser && storedLogin && storedToken) {
             this.authenticated = true;
             this.user = JSON.parse(storedUser);
             this.userLogin = storedLogin;
+            this.authToken = storedToken;
         }
     }
 
-    login(login: string) {
-        this.userLogin = login;
-        sessionStorage.setItem('userLogin', login);
-        this.authenticated = true;
-        this.carregarPerfil().subscribe();
+    login(login: string, senha: string): Observable<void> {
+        const obs = new Subject<void>();
+        this.http.post<{ token: string }>(`${this.apiURL}/login`, { login, senha }).subscribe({
+            next: (retorno) => {
+                this.userLogin = login;
+                this.authToken = retorno.token;
+                sessionStorage.setItem('userLogin', login);
+                sessionStorage.setItem('authToken', retorno.token);
+                this.authenticated = true;
+                obs.next();
+                obs.complete();
+            },
+            error: (error) => {
+                this.limparAutenticacao();
+                this.authenticated = false;
+                obs.error(error);
+            }
+        });
+        return obs.asObservable();
     }
 
     logout() {
@@ -46,11 +63,15 @@ export class AutenticacaoService {
             obs.error('Usuário não autenticado');
             return obs.asObservable();
         }
+        if (!this.authToken) {
+            obs.error('Token de autenticação ausente');
+            return obs.asObservable();
+        }
 
         this.http
             .get<any>(this.apiURL, {
                 headers: {
-                    Authorization: `Bearer ${this.userLogin}`
+                    Authorization: `Bearer ${this.authToken}`
                 }
             })
             .subscribe({
@@ -89,6 +110,8 @@ export class AutenticacaoService {
         sessionStorage.removeItem('profiles');
         sessionStorage.removeItem('user');
         sessionStorage.removeItem('userLogin');
+        sessionStorage.removeItem('authToken');
+        this.authToken = null;
     }
 
     getPerfil(): Perfil | null {
@@ -134,13 +157,13 @@ export class AutenticacaoService {
 
 export function authInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn) {
     const authService = inject(AutenticacaoService);
-    const userLogin = authService.getUserLogin();
+    const authToken = sessionStorage.getItem('authToken');
     const perfil = authService.getPerfil();
 
     let headers: { [key: string]: string } = {};
 
-    if (userLogin) {
-        headers['Authorization'] = `Bearer ${userLogin}`;
+    if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
     }
 
     if (perfil?.id) {
