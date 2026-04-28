@@ -1,9 +1,23 @@
 <p-toast />
+<p-confirmdialog />
 
 <div class="p-4">
-    <div class="mb-4">
-        <h1 class="text-2xl font-semibold m-0">Auditoria</h1>
-        <p class="text-color-secondary m-0 mt-1">Linha do tempo da evolução de ordem nas escalas abertas.</p>
+    <div class="mb-4 flex items-start justify-between gap-3 flex-wrap">
+        <div>
+            <h1 class="text-2xl font-semibold m-0">Auditoria</h1>
+            <p class="text-color-secondary m-0 mt-1">Linha do tempo da evolução de ordem nas escalas abertas.</p>
+        </div>
+        <button
+            pButton
+            type="button"
+            label="Reiniciar Teste"
+            icon="pi pi-refresh"
+            severity="danger"
+            [outlined]="true"
+            [loading]="reiniciandoTeste"
+            [disabled]="carregando || reiniciandoTeste"
+            (click)="confirmarReiniciarTeste()"
+        ></button>
     </div>
 
     <div class="mb-3 flex gap-2 flex-wrap" *ngIf="!carregando && escalas.length">

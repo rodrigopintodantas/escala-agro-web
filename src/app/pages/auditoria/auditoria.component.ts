@@ -5,23 +5,27 @@ import { CardModule } from 'primeng/card';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { AuditoriaEscalaAbertaItem, AuditoriaEscalaEventoItem, EscalaApiService } from '../../service/escala-api.service';
 
 @Component({
     selector: 'app-auditoria',
     standalone: true,
-    imports: [CommonModule, ButtonModule, CardModule, ProgressSpinnerModule, TagModule, ToastModule],
+    imports: [CommonModule, ButtonModule, CardModule, ProgressSpinnerModule, TagModule, ToastModule, ConfirmDialogModule],
+    providers: [ConfirmationService],
     templateUrl: './auditoria.component.html'
 })
 export class AuditoriaComponent implements OnInit {
     private api = inject(EscalaApiService);
     private msg = inject(MessageService);
+    private confirm = inject(ConfirmationService);
 
     abaSelecionada: 'veterinario' | 'tecnico' = 'veterinario';
     escalaSelecionadaId: number | null = null;
     carregando = false;
     escalas: AuditoriaEscalaAbertaItem[] = [];
+    reiniciandoTeste = false;
 
     ngOnInit(): void {
         this.carregar();
@@ -172,5 +176,40 @@ export class AuditoriaComponent implements OnInit {
 
     private dataCurta(iso: string): string {
         return new Date(`${iso}T12:00:00`).toLocaleDateString('pt-BR');
+    }
+
+    confirmarReiniciarTeste(): void {
+        if (this.reiniciandoTeste) return;
+        this.confirm.confirm({
+            header: 'Reiniciar Teste',
+            icon: 'pi pi-exclamation-triangle',
+            message:
+                'Esta ação remove escalas, plantões, afastamentos, permutas e históricos de auditoria. Os dados de usuários não serão alterados. Deseja continuar?',
+            acceptLabel: 'Reiniciar',
+            rejectLabel: 'Cancelar',
+            acceptButtonStyleClass: 'p-button-danger',
+            rejectButtonStyleClass: 'p-button-text',
+            accept: () => this.reiniciarTeste()
+        });
+    }
+
+    private reiniciarTeste(): void {
+        this.reiniciandoTeste = true;
+        this.api.reiniciarTeste().subscribe({
+            next: () => {
+                this.reiniciandoTeste = false;
+                this.msg.add({
+                    severity: 'success',
+                    summary: 'Reiniciar Teste',
+                    detail: 'Sistema reiniciado para testes. Usuários preservados.'
+                });
+                this.carregar();
+            },
+            error: (err) => {
+                this.reiniciandoTeste = false;
+                const det = err?.error?.message || 'Não foi possível reiniciar o sistema para testes.';
+                this.msg.add({ severity: 'error', summary: 'Erro', detail: det });
+            }
+        });
     }
 }

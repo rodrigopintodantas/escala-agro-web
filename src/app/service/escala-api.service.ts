@@ -97,6 +97,12 @@ export interface AuditoriaEscalaAbertaItem {
     eventos: AuditoriaEscalaEventoItem[];
 }
 
+export interface ReiniciarTesteResposta {
+    mensagem: string;
+    removidos: Record<string, number>;
+    ordemServidorRecriada: number;
+}
+
 export interface PermutaListagem {
     id: number;
     escalaId: number;
@@ -161,6 +167,7 @@ export interface CriarEscalaPayload {
 export class EscalaApiService {
     private http = inject(HttpClient);
     private base = `${environment.apiUrl}/escala`;
+    private sistemaBase = `${environment.apiUrl}/sistema`;
 
     listar(): Observable<EscalaListagem[]> {
         return this.http.get<EscalaListagem[]>(this.base);
@@ -178,6 +185,10 @@ export class EscalaApiService {
     listarAuditoria(categoria: 'veterinario' | 'tecnico' = 'veterinario'): Observable<AuditoriaEscalaAbertaItem[]> {
         const params = new HttpParams().set('categoria', categoria);
         return this.http.get<AuditoriaEscalaAbertaItem[]>(`${this.base}/auditoria`, { params });
+    }
+
+    reiniciarTeste(): Observable<ReiniciarTesteResposta> {
+        return this.http.post<ReiniciarTesteResposta>(`${this.sistemaBase}/reiniciar-teste`, {});
     }
 
     listarTecnicos(): Observable<VeterinarioOption[]> {
