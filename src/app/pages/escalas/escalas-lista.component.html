@@ -62,24 +62,12 @@
                                 [disabled]="carregandoDetalheEscalaId !== null || escalaConcluida(row)"
                             ></button>
                             <button
-                                pButton
-                                pRipple
-                                type="button"
-                                icon="pi pi-trash"
-                                severity="danger"
-                                class="p-button-rounded p-button-sm"
-                                pTooltip="Excluir escala"
-                                tooltipPosition="top"
-                                (click)="confirmarExcluir(row)"
-                                [loading]="excluindoId === row.id"
-                                [disabled]="escalaConcluida(row)"
-                            ></button>
-                            <button
                                 *ngIf="podeExibirBotaoAtivar(row)"
                                 pButton
                                 pRipple
                                 type="button"
                                 icon="pi pi-check-circle"
+                                severity="success"
                                 class="p-button-rounded p-button-sm"
                                 pTooltip="Ativar Escala — altera o status para ativa"
                                 tooltipPosition="top"
@@ -99,6 +87,19 @@
                                 (click)="confirmarConcluirEscala(row)"
                                 [loading]="concluindoEscalaId === row.id"
                                 [disabled]="acaoOutraEscalaEmAndamento(row.id)"
+                            ></button>
+                            <button
+                                pButton
+                                pRipple
+                                type="button"
+                                icon="pi pi-trash"
+                                severity="danger"
+                                class="p-button-rounded p-button-sm"
+                                pTooltip="Excluir escala"
+                                tooltipPosition="top"
+                                (click)="confirmarExcluir(row)"
+                                [loading]="excluindoId === row.id"
+                                [disabled]="escalaConcluida(row)"
                             ></button>
                         </ng-container>
                     </div>

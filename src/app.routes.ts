@@ -65,6 +65,11 @@ export const appRoutes: Routes = [
                 path: 'auditoria',
                 data: { breadcrumb: 'Auditoria' },
                 loadComponent: () => import('./app/pages/auditoria/auditoria.component').then((c) => c.AuditoriaComponent)
+            },
+            {
+                path: 'regras',
+                data: { breadcrumb: 'Regras do sistema' },
+                loadComponent: () => import('./app/pages/regras/regras.component').then((c) => c.RegrasComponent)
             }
         ]
     },

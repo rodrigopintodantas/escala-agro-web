@@ -90,6 +90,16 @@ export class AppMenu implements OnInit {
                     routerLink: ['/admin/auditoria']
                 }
             ]
+        },
+        {
+            label: 'Configurações',
+            items: [
+                {
+                    label: 'Regras do Sistema',
+                    icon: 'pi pi-book',
+                    routerLink: ['/admin/regras']
+                }
+            ]
         }
     ];
 
