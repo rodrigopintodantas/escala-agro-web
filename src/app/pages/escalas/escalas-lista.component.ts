@@ -154,6 +154,11 @@ export class EscalasListaComponent implements OnInit {
         return (row.status || '').toLowerCase() === 'concluida';
     }
 
+    podeCriarNovaEscala(): boolean {
+        if (!Array.isArray(this.escalas) || this.escalas.length === 0) return true;
+        return this.escalas.every((e) => String(e.status || '').toLowerCase() === 'concluida');
+    }
+
     ativarEscala(row: EscalaListagem): void {
         this.ativandoEscalaId = row.id;
         this.api.ativar(row.id).subscribe({

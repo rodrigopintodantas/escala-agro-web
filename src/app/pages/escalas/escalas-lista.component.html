@@ -12,6 +12,7 @@
             class="p-button-rounded"
             pTooltip="Nova escala"
             tooltipPosition="bottom"
+            [disabled]="!podeCriarNovaEscala()"
             [routerLink]="[prefixoArea, 'escalas', 'criar']"
         ></button>
     </div>
