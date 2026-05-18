@@ -119,6 +119,18 @@ export const appRoutes: Routes = [
         ]
     },
     {
+        path: 'meu-perfil',
+        component: AppLayout,
+        canActivate: [canActivateAuthRole],
+        children: [
+            {
+                path: '',
+                data: { breadcrumb: 'Meu perfil' },
+                loadComponent: () => import('./app/pages/meu-perfil/meu-perfil.component').then((m) => m.MeuPerfilComponent)
+            }
+        ]
+    },
+    {
         path: 'nao-encontrado',
         loadComponent: () => import('./app/pages/nao-encontrado/nao-encontrado.component').then((c) => c.NaoEncontradoComponent)
     },

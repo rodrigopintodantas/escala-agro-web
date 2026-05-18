@@ -4,12 +4,17 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { EscalaApiService } from './escala-api.service';
 
-export interface VeterinarioListaItem {
+export type EscopoServidor = 'veterinario' | 'tecnico';
+
+export interface ServidorListaItem {
     id: number;
     nome: string;
     login: string;
     suspensoEscala?: boolean;
 }
+
+/** @deprecated Use ServidorListaItem */
+export type VeterinarioListaItem = ServidorListaItem;
 
 export interface ExcluirVeterinarioResposta {
     removido: boolean;
@@ -39,20 +44,48 @@ export class ServidorApiService {
     private escalaApi = inject(EscalaApiService);
     private base = `${environment.apiUrl}/servidor`;
 
-    listarVeterinarios(): Observable<VeterinarioListaItem[]> {
-        return this.http.get<VeterinarioListaItem[]>(`${this.base}/veterinarios`);
+    listar(escopo: EscopoServidor): Observable<ServidorListaItem[]> {
+        const segmento = escopo === 'tecnico' ? 'tecnicos' : 'veterinarios';
+        return this.http.get<ServidorListaItem[]>(`${this.base}/${segmento}`);
+    }
+
+    listarVeterinarios(): Observable<ServidorListaItem[]> {
+        return this.listar('veterinario');
+    }
+
+    listarTecnicos(): Observable<ServidorListaItem[]> {
+        return this.listar('tecnico');
+    }
+
+    excluir(id: number, escopo: EscopoServidor): Observable<ExcluirVeterinarioResposta> {
+        const segmento = escopo === 'tecnico' ? 'tecnicos' : 'veterinarios';
+        return this.http.delete<ExcluirVeterinarioResposta>(`${this.base}/${segmento}/${id}`);
     }
 
     excluirVeterinario(id: number): Observable<ExcluirVeterinarioResposta> {
-        return this.http.delete<ExcluirVeterinarioResposta>(`${this.base}/veterinarios/${id}`);
+        return this.excluir(id, 'veterinario');
+    }
+
+    excluirTecnico(id: number): Observable<ExcluirVeterinarioResposta> {
+        return this.excluir(id, 'tecnico');
+    }
+
+    suspender(id: number, escopo: EscopoServidor): Observable<SuspenderVeterinarioResposta> {
+        const segmento = escopo === 'tecnico' ? 'tecnicos' : 'veterinarios';
+        return this.http.post<SuspenderVeterinarioResposta>(`${this.base}/${segmento}/${id}/suspender`, {});
     }
 
     suspenderVeterinario(id: number): Observable<SuspenderVeterinarioResposta> {
-        return this.http.post<SuspenderVeterinarioResposta>(`${this.base}/veterinarios/${id}/suspender`, {});
+        return this.suspender(id, 'veterinario');
+    }
+
+    reativar(id: number, escopo: EscopoServidor): Observable<ReativarVeterinarioResposta> {
+        const segmento = escopo === 'tecnico' ? 'tecnicos' : 'veterinarios';
+        return this.http.post<ReativarVeterinarioResposta>(`${this.base}/${segmento}/${id}/reativar`, {});
     }
 
     reativarVeterinario(id: number): Observable<ReativarVeterinarioResposta> {
-        return this.http.post<ReativarVeterinarioResposta>(`${this.base}/veterinarios/${id}/reativar`, {});
+        return this.reativar(id, 'veterinario');
     }
 
     existeEscalaAtiva(): Observable<boolean> {

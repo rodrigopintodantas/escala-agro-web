@@ -3,9 +3,36 @@
 <div class="p-4">
     <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
-            <h1 class="text-2xl font-semibold m-0">Servidores — veterinários</h1>
-            <p class="text-color-secondary m-0 mt-1 text-sm">Gestão de veterinários ativos no sistema.</p>
+            <h1 class="text-2xl font-semibold m-0">Servidores</h1>
+            <p class="text-color-secondary m-0 mt-1 text-sm">
+                Gestão de {{ rotuloEscopo }} ativos no sistema.
+            </p>
         </div>
+    </div>
+
+    <div class="mb-4 flex gap-2">
+        <button
+            pButton
+            type="button"
+            label="Veterinários"
+            [ngClass]="{
+                'p-button-outlined': escopoServidor !== 'veterinario',
+                'p-button-primary': escopoServidor === 'veterinario'
+            }"
+            [disabled]="carregando"
+            (click)="trocarEscopo('veterinario')"
+        ></button>
+        <button
+            pButton
+            type="button"
+            label="Técnicos"
+            [ngClass]="{
+                'p-button-outlined': escopoServidor !== 'tecnico',
+                'p-button-primary': escopoServidor === 'tecnico'
+            }"
+            [disabled]="carregando"
+            (click)="trocarEscopo('tecnico')"
+        ></button>
     </div>
 
     <p-table [value]="linhas" [loading]="carregando" [paginator]="true" [rows]="15" responsiveLayout="scroll">
@@ -28,10 +55,16 @@
                         [icon]="existeEscalaAtiva ? (row.suspensoEscala ? 'pi pi-play' : 'pi pi-pause') : 'pi pi-trash'"
                         [severity]="existeEscalaAtiva ? (row.suspensoEscala ? 'success' : 'warn') : 'danger'"
                         class="p-button-rounded p-button-sm"
-                        [pTooltip]="existeEscalaAtiva ? (row.suspensoEscala ? 'Reativar Servidor' : 'Suspender Servidor') : 'Excluir veterinário'"
+                        [pTooltip]="
+                            existeEscalaAtiva
+                                ? row.suspensoEscala
+                                    ? 'Reativar Servidor'
+                                    : 'Suspender Servidor'
+                                : 'Excluir ' + rotuloEscopoSingular
+                        "
                         tooltipPosition="top"
                         (click)="confirmarExcluir(row)"
-                        [loading]="(excluindoId === row.id) || (suspenderId === row.id)"
+                        [loading]="excluindoId === row.id || suspenderId === row.id"
                         [disabled]="
                             (excluindoId !== null && excluindoId !== row.id) ||
                             (suspenderId !== null && suspenderId !== row.id)
@@ -42,7 +75,7 @@
         </ng-template>
         <ng-template pTemplate="emptymessage">
             <tr>
-                <td colspan="3" class="text-center p-4">Nenhum veterinário encontrado.</td>
+                <td colspan="3" class="text-center p-4">Nenhum {{ rotuloEscopoSingular }} encontrado.</td>
             </tr>
         </ng-template>
     </p-table>

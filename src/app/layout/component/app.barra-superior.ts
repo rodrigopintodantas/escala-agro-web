@@ -51,6 +51,12 @@ import { AppConfigurator } from './app.configurator';
                 </button>
                 <ul class="list-none p-4 m-0 rounded-border shadow hidden absolute bg-surface-0 dark:bg-surface-900 origin-top w-full sm:w-48 mt-2 right-0 top-auto">
                     <li>
+                        <a (click)="irMeuPerfil()" pRipple class="flex p-2 rounded-border items-center hover:bg-emphasis transition-colors duration-150 cursor-pointer">
+                            <i class="pi pi-user !mr-4"></i>
+                            <span class="hidden sm:inline">Meu perfil</span>
+                        </a>
+                    </li>
+                    <li>
                         <a (click)="sair()" pRipple class="flex p-2 rounded-border items-center hover:bg-emphasis transition-colors duration-150 cursor-pointer">
                             <i class="pi pi-power-off !mr-4"></i>
                             <span class="hidden sm:inline">Sair</span>
@@ -84,6 +90,10 @@ export class AppBarraSuperior implements OnInit {
     toggleDarkMode() {
         this.layoutService.layoutConfig.update((state) => ({ ...state, darkTheme: !state.darkTheme }));
     }
+    irMeuPerfil() {
+        void this.router.navigate(['/meu-perfil']);
+    }
+
     sair() {
         this.auth.logout();
     }

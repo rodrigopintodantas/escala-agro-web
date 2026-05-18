@@ -153,6 +153,14 @@ export class AutenticacaoService {
     isProdutor() {
         return this.temPerfil() && this.getNomePerfilAtual() === 'Produtor';
     }
+
+    alterarSenha(senhaAtual: string, senhaNova: string, senhaNovaConfirmacao: string): Observable<{ ok: boolean }> {
+        return this.http.post<{ ok: boolean }>(`${this.apiURL}/alterar-senha`, {
+            senha_atual: senhaAtual,
+            senha_nova: senhaNova,
+            senha_nova_confirmacao: senhaNovaConfirmacao
+        });
+    }
 }
 
 export function authInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn) {
