@@ -71,6 +71,10 @@
 
     <div class="mb-6" *ngIf="membrosPorCategoria('veterinario').length || membrosPorCategoria('tecnico').length">
         <h2 class="text-xl font-semibold mb-2">Rodízio — veterinários</h2>
+        <p class="text-sm text-color-secondary m-0 mb-2 max-w-3xl">
+            Fila do rodízio <strong>desta escala</strong> após o último recálculo (1º = próximo da vez no ciclo). O calendário abaixo mostra quem está em cada dia.
+            A ordem em <strong>Ordem dos servidores</strong> no menu é a referência global entre escalas e deve acompanhar esta lista após afastamentos.
+        </p>
         <div class="flex flex-wrap gap-2 mb-4">
             <span
                 *ngFor="let m of membrosPorCategoria('veterinario'); let i = index"

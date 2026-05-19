@@ -58,6 +58,19 @@
                 Regra de retorno (férias/abono): o servidor só volta a ser escalável após passar por pelo menos 1 dia útil depois do fim do
                 afastamento.
             </li>
+            <li>
+                <strong>Retroativo ao registrar (férias/abono):</strong> plantões anteriores à <strong>data de início</strong> do afastamento
+                também são recalculados se não houve dia útil entre o plantão e essa data (conta-se a partir do dia
+                <strong>seguinte</strong> ao plantão; ex.: plantão sábado/domingo e início na segunda, ou plantão na sexta e abono na
+                segunda), inclusive quando o registro no sistema é feito com antecedência.
+                Feriados/pontos facultativos em escalas de fim de semana não contam como dia útil para essa regra.
+                Com vários afastamentos na mesma escala (ex.: férias de um servidor e depois abono de outro), o recálculo
+                altera somente os plantões em que esse servidor está escalado e indisponível (retroativo, período ou
+                retorno), sem reordenar os demais dias do mesmo mês (ex.: abono do Felipe no dia 22 só tira o Felipe do
+                dia 20 em que ele estava; não preenche o dia 21 com Gabriela nem mexe no plantão do dia 27). A partir do
+                primeiro dia do mês seguinte ao fim do afastamento, o rodízio da escala é re-simulado por completo para
+                manter a sequência coerente (ex.: junho e julho na mesma escala).
+            </li>
         </ul>
     </section>
 
