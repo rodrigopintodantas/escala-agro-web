@@ -99,6 +99,11 @@ export class EscalasListaComponent implements OnInit {
         return this.salvandoDatasExtras || this.removerFeriadoCarregandoId !== null;
     }
 
+    /** Escala ativa: remoção de datas extras desabilitada; inclusão em modo gestão. */
+    get escalaExtrasAtiva(): boolean {
+        return (this.escalaEditarExtras?.status || '').toLowerCase() === 'ativa';
+    }
+
     ngOnInit(): void {
         const m = this.route.snapshot.data['escalasModo'];
         if (m === 'veterinario') {
@@ -382,6 +387,14 @@ export class EscalasListaComponent implements OnInit {
     }
 
     confirmarRemoverFeriadoSelecionado(): void {
+        if (this.escalaExtrasAtiva) {
+            this.msg.add({
+                severity: 'warn',
+                summary: 'Escala ativa',
+                detail: 'Não é possível remover datas adicionais enquanto a escala estiver ativa.'
+            });
+            return;
+        }
         if (this.bloqueadoDialogExtras) {
             return;
         }
@@ -509,24 +522,30 @@ export class EscalasListaComponent implements OnInit {
                 this.api.obterPorId(this.escalaEditarExtras!.id).subscribe({
                     next: (detAtual: EscalaDetalhe) => {
                         this.montarListasParaDialogoExtras(detAtual);
-                        const atual = res.atualizados ?? 0;
-                        const rotTxt =
-                            atual === 0
-                                ? ' O rodízio foi atualizado a partir desta data.'
-                                : atual === 1
-                                  ? ' O rodízio foi recalculado e 1 plantão existente mudou de veterinário.'
-                                  : ` O rodízio foi recalculado e ${atual} plantões existentes foram atualizados.`;
-                        const pc = res.permutasCanceladas ?? 0;
-                        const permTxt =
-                            pc === 0
-                                ? ''
-                                : pc === 1
-                                  ? ' 1 permuta pendente foi cancelada.'
-                                  : ` ${pc} permutas pendentes foram canceladas.`;
+                        let detail = `A data ${this.rotuloDataIsoCurto(iso)} foi incluída na escala.`;
+                        if (res.modoGestao) {
+                            detail += ' Plantões criados em modo gestão; a ordem do rodízio não foi alterada.';
+                        } else {
+                            const atual = res.atualizados ?? 0;
+                            const rotTxt =
+                                atual === 0
+                                    ? ' O rodízio foi atualizado a partir desta data.'
+                                    : atual === 1
+                                      ? ' O rodízio foi recalculado e 1 plantão existente mudou de veterinário.'
+                                      : ` O rodízio foi recalculado e ${atual} plantões existentes foram atualizados.`;
+                            const pc = res.permutasCanceladas ?? 0;
+                            const permTxt =
+                                pc === 0
+                                    ? ''
+                                    : pc === 1
+                                      ? ' 1 permuta pendente foi cancelada.'
+                                      : ` ${pc} permutas pendentes foram canceladas.`;
+                            detail += rotTxt + permTxt;
+                        }
                         this.msg.add({
                             severity: 'success',
                             summary: 'Data adicionada',
-                            detail: `A data ${this.rotuloDataIsoCurto(iso)} foi incluída na escala.${rotTxt}${permTxt}`
+                            detail
                         });
                     },
                     error: () => {

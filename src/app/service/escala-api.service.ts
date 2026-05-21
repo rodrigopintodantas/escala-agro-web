@@ -140,6 +140,8 @@ export interface AdicionarDatasExtrasResposta {
     ordemGlobalAlterada?: boolean;
     /** Permutas pendentes canceladas após recalcular o rodízio */
     permutasCanceladas?: number;
+    /** Escala ativa: inclusão sem recálculo de ordem (modo gestão). */
+    modoGestao?: boolean;
     datas: string[];
 }
 

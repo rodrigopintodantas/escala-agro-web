@@ -395,7 +395,12 @@ export class VerEscalaComponent implements OnInit {
             return 'Gestão - Servidor Suspenso da Escala';
         }
         const obs = p.observacao?.trim();
-        if (obs && (obs.startsWith('Gestão - Atestado médico') || obs.startsWith('Gestão - Servidor Suspenso da Escala'))) {
+        if (
+            obs &&
+            (obs.startsWith('Gestão - Atestado médico') ||
+                obs.startsWith('Gestão - Servidor Suspenso da Escala') ||
+                obs.startsWith('Gestão - Feriado ou data adicional'))
+        ) {
             return obs;
         }
         const nome = p.usuario?.nome?.trim() || '—';
@@ -458,6 +463,7 @@ export class VerEscalaComponent implements OnInit {
         if (
             obs.startsWith('Gestão - Atestado médico') ||
             obs.startsWith('Gestão - Servidor Suspenso da Escala') ||
+            obs.startsWith('Gestão - Feriado ou data adicional') ||
             obs.startsWith('Alterado por afastamento:')
         ) {
             return obs;
