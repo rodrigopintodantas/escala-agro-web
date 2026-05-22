@@ -6,7 +6,6 @@ import { ButtonModule } from 'primeng/button';
 import { CalendarModule } from 'primeng/calendar';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
-import { TextareaModule } from 'primeng/textarea';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { Calendar } from 'primeng/calendar';
@@ -23,7 +22,6 @@ import { EscalaApiService } from '../../../service/escala-api.service';
         CalendarModule,
         DropdownModule,
         InputTextModule,
-        TextareaModule,
         ToastModule
     ],
     templateUrl: './criar-escala.component.html'
@@ -36,7 +34,6 @@ export class CriarEscalaComponent {
     private msg = inject(MessageService);
 
     nome = '';
-    descricao = '';
     mesInicio: Date | null = null;
     mesFim: Date | null = null;
     dataInicio: Date | null = null;
@@ -196,7 +193,6 @@ export class CriarEscalaComponent {
         this.api
             .criar({
                 nome: this.nome.trim(),
-                descricao: this.descricao?.trim() || undefined,
                 dataInicio: this.fmt(this.dataInicio),
                 dataFim: this.fmt(this.dataFim),
                 periodicidade: this.periodicidade,
