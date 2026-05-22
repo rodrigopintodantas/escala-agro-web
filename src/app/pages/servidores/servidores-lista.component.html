@@ -8,6 +8,30 @@
                 Gestão de {{ rotuloEscopo }} ativos no sistema.
             </p>
         </div>
+        <div class="flex flex-wrap gap-2 justify-end">
+            <button
+                pButton
+                type="button"
+                label="Carga desenvolvimento"
+                icon="pi pi-database"
+                severity="warn"
+                [outlined]="true"
+                [loading]="carregandoConjunto === 'desenvolvimento'"
+                [disabled]="carregando || carregandoConjunto !== null"
+                (click)="confirmarCargaConjunto('desenvolvimento')"
+            ></button>
+            <button
+                pButton
+                type="button"
+                label="Carga produção"
+                icon="pi pi-server"
+                severity="danger"
+                [outlined]="true"
+                [loading]="carregandoConjunto === 'producao'"
+                [disabled]="carregando || carregandoConjunto !== null"
+                (click)="confirmarCargaConjunto('producao')"
+            ></button>
+        </div>
     </div>
 
     <div class="mb-4 flex gap-2">

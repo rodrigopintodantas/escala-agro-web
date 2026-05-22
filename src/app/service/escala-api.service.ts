@@ -103,6 +103,19 @@ export interface ReiniciarTesteResposta {
     ordemServidorRecriada: number;
 }
 
+export interface CargaEscalaUsuariosResposta {
+    mensagem: string;
+    conjunto: string;
+    inseridos: {
+        totalUsuarios: number;
+        administradores: number;
+        veterinarios: number;
+        tecnicos: number;
+    };
+    ordemPorEscopo: Array<{ escopo: string; total: number }>;
+    senhaPadrao: string;
+}
+
 export interface PermutaListagem {
     id: number;
     escalaId: number;
@@ -191,6 +204,14 @@ export class EscalaApiService {
 
     reiniciarTeste(): Observable<ReiniciarTesteResposta> {
         return this.http.post<ReiniciarTesteResposta>(`${this.sistemaBase}/reiniciar-teste`, {});
+    }
+
+    carregarDesenvolvimento(): Observable<CargaEscalaUsuariosResposta> {
+        return this.http.post<CargaEscalaUsuariosResposta>(`${this.sistemaBase}/carregar-desenvolvimento`, {});
+    }
+
+    carregarProducao(): Observable<CargaEscalaUsuariosResposta> {
+        return this.http.post<CargaEscalaUsuariosResposta>(`${this.sistemaBase}/carregar-producao`, {});
     }
 
     listarTecnicos(): Observable<VeterinarioOption[]> {

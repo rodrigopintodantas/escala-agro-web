@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -7,7 +8,11 @@ import { RippleModule } from 'primeng/ripple';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
+import { AutenticacaoService } from '../../service/autenticacao.service';
+import { CargaEscalaUsuariosResposta, EscalaApiService } from '../../service/escala-api.service';
 import { EscopoServidor, ServidorApiService, ServidorListaItem } from '../../service/servidor-api.service';
+
+type ConjuntoCarga = 'desenvolvimento' | 'producao';
 
 @Component({
     selector: 'app-servidores-lista',
@@ -18,12 +23,16 @@ import { EscopoServidor, ServidorApiService, ServidorListaItem } from '../../ser
 })
 export class ServidoresListaComponent implements OnInit {
     private api = inject(ServidorApiService);
+    private escalaApi = inject(EscalaApiService);
+    private auth = inject(AutenticacaoService);
+    private router = inject(Router);
     private msg = inject(MessageService);
     private confirm = inject(ConfirmationService);
 
     escopoServidor: EscopoServidor = 'veterinario';
     linhas: ServidorListaItem[] = [];
     carregando = true;
+    carregandoConjunto: ConjuntoCarga | null = null;
     excluindoId: number | null = null;
     suspenderId: number | null = null;
     existeEscalaAtiva = false;
@@ -73,6 +82,53 @@ export class ServidoresListaComponent implements OnInit {
                 this.msg.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível validar escalas ativas.' });
             }
         });
+    }
+
+    confirmarCargaConjunto(conjunto: ConjuntoCarga): void {
+        const rotulo = conjunto === 'desenvolvimento' ? 'desenvolvimento' : 'produção';
+        this.confirm.confirm({
+            message:
+                `Carregar o conjunto de ${rotulo}? Isso apaga escalas, afastamentos, plantões e todos os usuários, ` +
+                `substituindo pelos servidores do conjunto e recriando a ordem global. Você será desconectado ao final.`,
+            header: `Carga ${rotulo}`,
+            icon: 'pi pi-exclamation-triangle',
+            acceptLabel: 'Confirmar carga',
+            rejectLabel: 'Cancelar',
+            acceptButtonStyleClass: 'p-button-danger',
+            rejectButtonStyleClass: 'p-button-text',
+            accept: () => this.executarCargaConjunto(conjunto)
+        });
+    }
+
+    private executarCargaConjunto(conjunto: ConjuntoCarga): void {
+        this.carregandoConjunto = conjunto;
+        const req =
+            conjunto === 'desenvolvimento'
+                ? this.escalaApi.carregarDesenvolvimento()
+                : this.escalaApi.carregarProducao();
+
+        req.subscribe({
+            next: (res) => {
+                this.carregandoConjunto = null;
+                const detalhe = this.montarDetalheCarga(res);
+                sessionStorage.setItem('escalaPosCargaMensagem', detalhe);
+                this.auth.logout();
+                void this.router.navigate(['/']);
+            },
+            error: (err) => {
+                this.carregandoConjunto = null;
+                const det = err?.error?.message || 'Não foi possível executar a carga de servidores.';
+                this.msg.add({ severity: 'error', summary: 'Erro', detail: det });
+            }
+        });
+    }
+
+    private montarDetalheCarga(res: CargaEscalaUsuariosResposta): string {
+        const i = res.inseridos;
+        return (
+            `${res.mensagem} Total: ${i.totalUsuarios} (${i.veterinarios} vets, ${i.tecnicos} técnicos). ` +
+            `Faça login novamente (senha padrão: ${res.senhaPadrao}).`
+        );
     }
 
     confirmarExcluir(row: ServidorListaItem): void {

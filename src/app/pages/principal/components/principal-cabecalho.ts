@@ -30,6 +30,13 @@ import { InputTextModule } from 'primeng/inputtext';
                 <p-button label="Tentar novamente" severity="danger" icon="pi pi-refresh" (click)="tentarNovamente()"></p-button>
             </div>
 
+            <div
+                *ngIf="!carregando && !error && !temLogin && mensagemPosCarga"
+                class="rounded-md border border-green-200 bg-green-50 p-3 text-green-800 text-sm"
+            >
+                {{ mensagemPosCarga }}
+            </div>
+
             <div *ngIf="!carregando && !error && !temLogin" class="flex flex-col gap-2">
                 <label for="loginInput" class="text-sm font-medium text-surface-700">Login</label>
                 <input
@@ -123,6 +130,7 @@ export class PrincipalCabecalho {
     loginInput: string = '';
     senhaInput: string = '';
     temLogin: boolean = false;
+    mensagemPosCarga: string | null = null;
 
     isLocalEnvironment = environment.ambiente !== 'production';
     isAmbienteDesenv: boolean = environment.ambiente !== 'production';
@@ -130,6 +138,12 @@ export class PrincipalCabecalho {
     ngOnInit(): void {
         this.error = false;
         this.carregando = true;
+
+        const posCarga = sessionStorage.getItem('escalaPosCargaMensagem');
+        if (posCarga) {
+            sessionStorage.removeItem('escalaPosCargaMensagem');
+            this.mensagemPosCarga = posCarga;
+        }
 
         const userLogin = this.auth.getUserLogin();
         this.temLogin = !!userLogin;
