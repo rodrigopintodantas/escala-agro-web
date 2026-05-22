@@ -16,7 +16,32 @@
         ></button>
     </div>
 
-    <p-table [value]="afastamentos" [loading]="carregando" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '50rem' }">
+    <div class="mb-4 flex gap-2" *ngIf="exibirAbasEscopo">
+        <button
+            pButton
+            type="button"
+            label="Veterinários"
+            [ngClass]="{
+                'p-button-outlined': escopoAtivo !== 'veterinario',
+                'p-button-primary': escopoAtivo === 'veterinario'
+            }"
+            [disabled]="carregando"
+            (click)="trocarEscopo('veterinario')"
+        ></button>
+        <button
+            pButton
+            type="button"
+            label="Técnicos"
+            [ngClass]="{
+                'p-button-outlined': escopoAtivo !== 'tecnico',
+                'p-button-primary': escopoAtivo === 'tecnico'
+            }"
+            [disabled]="carregando"
+            (click)="trocarEscopo('tecnico')"
+        ></button>
+    </div>
+
+    <p-table [value]="afastamentosExibidos" [loading]="carregando" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '50rem' }">
         <ng-template pTemplate="header">
             <tr>
                 <th *ngIf="modo === 'admin'">Servidor</th>
@@ -30,13 +55,13 @@
             <tr>
                 <td *ngIf="modo === 'admin'">
                     <span class="font-medium">{{ row.usuario?.nome || '—' }}</span>
-                    <span class="text-color-secondary text-sm" *ngIf="papelServidor(row.usuarioId)"> · {{ papelServidor(row.usuarioId) }}</span>
                 </td>
                 <td>{{ labelTipo(row) }}</td>
                 <td>{{ formatoData(row.dataInicio) }}</td>
                 <td>{{ formatoData(row.dataFim) }}</td>
                 <td class="text-center">
                     <button
+                        *ngIf="podeDesfazer(row)"
                         pButton
                         pRipple
                         type="button"
@@ -52,7 +77,15 @@
         </ng-template>
         <ng-template pTemplate="emptymessage">
             <tr>
-                <td [attr.colspan]="modo === 'admin' ? 5 : 4" class="text-center p-4">Nenhum afastamento encontrado.</td>
+                <td [attr.colspan]="modo === 'admin' ? 5 : 4" class="text-center p-4">
+                    {{
+                        exibirAbasEscopo && escopoAtivo === 'tecnico'
+                            ? 'Nenhum afastamento de técnico encontrado.'
+                            : exibirAbasEscopo
+                              ? 'Nenhum afastamento de veterinário encontrado.'
+                              : 'Nenhum afastamento encontrado.'
+                    }}
+                </td>
             </tr>
         </ng-template>
     </p-table>
@@ -132,7 +165,7 @@
             icon="pi pi-check"
             (click)="salvar()"
             [loading]="salvando"
-            [disabled]="salvando || tipos.length === 0 || (modo === 'admin' && servidores.length === 0)"
+            [disabled]="salvando || tipos.length === 0 || (modo === 'admin' && opcoesUsuarioDropdown().length === 0)"
         ></button>
     </ng-template>
 </p-dialog>

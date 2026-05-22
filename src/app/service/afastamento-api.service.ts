@@ -31,6 +31,8 @@ export interface AfastamentoListagem {
     tipo?: TipoAfastamento;
     usuario?: { id: number; nome: string; login: string; email?: string };
     recalc?: RecalculoAfastamentoResumo;
+    /** Único desfazível por classe (vet/técnico): afastamento com `createdAt` mais recente no sistema. */
+    desfazerDisponivel?: boolean;
 }
 
 export interface CriarAfastamentoPayload {

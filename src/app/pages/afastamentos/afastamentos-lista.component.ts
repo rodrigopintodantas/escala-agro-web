@@ -52,6 +52,9 @@ export class AfastamentosListaComponent implements OnInit {
     afastamentos: AfastamentoListagem[] = [];
     tipos: TipoAfastamento[] = [];
     servidores: Array<VeterinarioOption & { papel: 'Veterinário' | 'Técnico' }> = [];
+    private idsVeterinarios = new Set<number>();
+    private idsTecnicos = new Set<number>();
+    escopoAtivo: 'veterinario' | 'tecnico' = 'veterinario';
     carregando = true;
     modo: AfastamentosListaModo = 'veterinario';
 
@@ -62,7 +65,6 @@ export class AfastamentosListaComponent implements OnInit {
     dataInicio: Date | null = null;
     dataFim: Date | null = null;
 
-    /** Linha em processo de exclusão (desfazer). */
     desfazendoId: number | null = null;
 
     ngOnInit(): void {
@@ -75,10 +77,38 @@ export class AfastamentosListaComponent implements OnInit {
         this.carregarAfastamentos();
     }
 
+    get exibirAbasEscopo(): boolean {
+        return this.modo === 'admin';
+    }
+
     get subtitulo(): string {
-        return this.modo === 'admin'
-            ? 'Todos os afastamentos cadastrados no sistema.'
-            : 'Seus afastamentos registrados.';
+        if (this.modo !== 'admin') {
+            return 'Seus afastamentos registrados.';
+        }
+        return this.escopoAtivo === 'tecnico'
+            ? 'Afastamentos dos técnicos. Só o cadastro mais recente da classe pode ser desfeito.'
+            : 'Afastamentos dos veterinários. Só o cadastro mais recente da classe pode ser desfeito.';
+    }
+
+    get afastamentosExibidos(): AfastamentoListagem[] {
+        if (!this.exibirAbasEscopo) {
+            return this.afastamentos;
+        }
+        const ids = this.escopoAtivo === 'tecnico' ? this.idsTecnicos : this.idsVeterinarios;
+        return this.afastamentos.filter((a) => ids.has(Number(a.usuarioId)));
+    }
+
+    trocarEscopo(escopo: 'veterinario' | 'tecnico'): void {
+        if (this.escopoAtivo === escopo || this.carregando) {
+            return;
+        }
+        this.escopoAtivo = escopo;
+        if (this.dialogAberto && this.modo === 'admin') {
+            const ids = escopo === 'tecnico' ? this.idsTecnicos : this.idsVeterinarios;
+            if (this.usuarioIdSelecionado != null && !ids.has(Number(this.usuarioIdSelecionado))) {
+                this.usuarioIdSelecionado = null;
+            }
+        }
     }
 
     private carregarTipos(): void {
@@ -109,6 +139,8 @@ export class AfastamentosListaComponent implements OnInit {
                 });
             },
             next: ({ veterinarios, tecnicos }) => {
+                this.idsVeterinarios = new Set(veterinarios.map((v) => Number(v.id)).filter((id) => Number.isFinite(id)));
+                this.idsTecnicos = new Set(tecnicos.map((t) => Number(t.id)).filter((id) => Number.isFinite(id)));
                 const base = [
                     ...veterinarios.map((v) => ({ ...v, papel: 'Veterinário' as const })),
                     ...tecnicos.map((t) => ({ ...t, papel: 'Técnico' as const }))
@@ -237,7 +269,6 @@ export class AfastamentosListaComponent implements OnInit {
         this.api.criar(payload).subscribe({
             next: (criado) => {
                 this.salvando = false;
-                this.afastamentos = [criado, ...this.afastamentos];
                 this.fecharDialog();
                 this.msg.add({ severity: 'success', summary: 'Afastamento', detail: 'Registro criado com sucesso.' });
                 if (criado?.recalc && criado.recalc.escalasAfetadas > 0) {
@@ -251,6 +282,7 @@ export class AfastamentosListaComponent implements OnInit {
                         detail: `${criado.recalc.escalasAfetadas} escala(s), ${criado.recalc.plantoesAtualizados} plantão(ões) ajustado(s), ${criado.recalc.ordensAlteradas} ordem(ns) de escala alterada(s).${og}`
                     });
                 }
+                this.carregarAfastamentos();
             },
             error: (err) => {
                 this.salvando = false;
@@ -275,19 +307,23 @@ export class AfastamentosListaComponent implements OnInit {
     }
 
     opcoesUsuarioDropdown(): { label: string; value: number }[] {
-        return this.servidores.map((s) => ({ label: `${s.nome} - ${s.papel}`, value: s.id }));
+        const papelAlvo = this.escopoAtivo === 'tecnico' ? 'Técnico' : 'Veterinário';
+        return this.servidores
+            .filter((s) => s.papel === papelAlvo)
+            .map((s) => ({ label: s.nome, value: s.id }));
     }
 
-    papelServidor(id: number | null | undefined): string | null {
-        if (id == null) return null;
-        const row = this.servidores.find((s) => Number(s.id) === Number(id));
-        return row?.papel || null;
+    podeDesfazer(row: AfastamentoListagem): boolean {
+        return row.desfazerDisponivel === true;
     }
 
     confirmarDesfazer(row: AfastamentoListagem): void {
+        if (!this.podeDesfazer(row)) {
+            return;
+        }
         this.confirm.confirm({
             message:
-                'Remover este afastamento e recalcular as escalas no período? Permutas pendentes nas datas afetadas podem ser canceladas.',
+                'Desfazer este afastamento? A ordem dos servidores e o calendário das escalas voltam ao estado imediatamente anterior a este cadastro. Permutas pendentes nas escalas afetadas podem ser canceladas.',
             header: 'Desfazer afastamento',
             icon: 'pi pi-exclamation-triangle',
             acceptLabel: 'Desfazer',
@@ -302,7 +338,6 @@ export class AfastamentosListaComponent implements OnInit {
         this.api.desfazer(id).subscribe({
             next: (res) => {
                 this.desfazendoId = null;
-                this.afastamentos = this.afastamentos.filter((a) => a.id !== id);
                 this.msg.add({ severity: 'success', summary: 'Afastamento', detail: 'Registro removido.' });
                 const recalc: RecalculoAfastamentoResumo | undefined = res?.recalc;
                 if (recalc && recalc.escalasAfetadas > 0) {
@@ -316,6 +351,7 @@ export class AfastamentosListaComponent implements OnInit {
                         detail: `${recalc.escalasAfetadas} escala(s), ${recalc.plantoesAtualizados} plantão(ões) ajustado(s), ${recalc.ordensAlteradas} ordem(ns) de escala alterada(s).${og}`
                     });
                 }
+                this.carregarAfastamentos();
             },
             error: (err) => {
                 this.desfazendoId = null;
