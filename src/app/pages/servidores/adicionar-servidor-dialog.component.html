@@ -1,0 +1,79 @@
+<p-dialog
+    [visible]="visible"
+    (visibleChange)="visibleChange.emit($event)"
+    header="Adicionar servidor"
+    [modal]="true"
+    [style]="{ width: '28rem' }"
+    [draggable]="false"
+    (onShow)="aoAbrir()"
+>
+    <p class="text-sm text-color-secondary m-0 mb-3" *ngIf="existeEscalaBloqueandoOrdem">
+        Há escala em rascunho ou ativa. O novo servidor ficará em
+        <strong>Aguardando conclusão da escala</strong> e não alterará a ordem global até a conclusão da escala e o
+        recálculo da ordem dos servidores.
+    </p>
+
+    <form class="flex flex-col gap-3" [formGroup]="formulario" (ngSubmit)="enviar()">
+        <div class="flex flex-col gap-1">
+            <span class="font-medium">Tipo de servidor *</span>
+            <div class="flex gap-2">
+                <button
+                    pButton
+                    type="button"
+                    label="Veterinário"
+                    [ngClass]="{
+                        'p-button-outlined': escopoSelecionado !== 'veterinario',
+                        'p-button-primary': escopoSelecionado === 'veterinario'
+                    }"
+                    [disabled]="salvando"
+                    (click)="selecionarEscopo('veterinario')"
+                ></button>
+                <button
+                    pButton
+                    type="button"
+                    label="Técnico"
+                    [ngClass]="{
+                        'p-button-outlined': escopoSelecionado !== 'tecnico',
+                        'p-button-primary': escopoSelecionado === 'tecnico'
+                    }"
+                    [disabled]="salvando"
+                    (click)="selecionarEscopo('tecnico')"
+                ></button>
+            </div>
+        </div>
+        <div class="flex flex-col gap-1">
+            <label for="nomeServidor">Nome</label>
+            <input id="nomeServidor" type="text" pInputText formControlName="nome" class="w-full" autocomplete="off" />
+            <small class="p-error" *ngIf="formulario.controls.nome.invalid && formulario.controls.nome.touched">
+                Nome é obrigatório.
+            </small>
+        </div>
+        <div class="flex flex-col gap-1">
+            <label for="loginServidor">Login</label>
+            <input
+                id="loginServidor"
+                type="text"
+                pInputText
+                formControlName="login"
+                class="w-full font-mono"
+                autocomplete="off"
+            />
+            <small class="p-error" *ngIf="formulario.controls.login.invalid && formulario.controls.login.touched">
+                Login é obrigatório.
+            </small>
+        </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+        <button pButton type="button" label="Cancelar" class="p-button-text" [disabled]="salvando" (click)="fechar()"></button>
+        <button
+            pButton
+            type="button"
+            label="Salvar"
+            icon="pi pi-check"
+            [loading]="salvando"
+            [disabled]="salvando || formulario.invalid"
+            (click)="enviar()"
+        ></button>
+    </ng-template>
+</p-dialog>

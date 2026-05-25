@@ -3,7 +3,7 @@ import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular
 import { ActivatedRoute } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
-import { TableModule } from 'primeng/table';
+import { TableModule, TableRowReorderEvent } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { EscalaApiService, VeterinarioOption } from '../../service/escala-api.service';
 
@@ -29,7 +29,8 @@ export class OrdemServidoresComponent implements OnInit {
 
     carregando = false;
     salvando = false;
-    existeEscalaAtiva = false;
+    /** Bloqueia edição manual quando há escala em rascunho ou ativa. */
+    bloqueiaEdicaoOrdem = false;
     private ordemOriginalIds: number[] = [];
 
     get ordemFoiAlterada(): boolean {
@@ -52,7 +53,7 @@ export class OrdemServidoresComponent implements OnInit {
             return;
         }
 
-        this.carregarBloqueioEdicaoPorEscalaAtiva();
+        this.carregarBloqueioEdicaoOrdem();
         this.carregarListaPorEscopo();
     }
 
@@ -81,13 +82,16 @@ export class OrdemServidoresComponent implements OnInit {
         });
     }
 
-    private carregarBloqueioEdicaoPorEscalaAtiva(): void {
+    private carregarBloqueioEdicaoOrdem(): void {
         this.api.listar().subscribe({
             next: (escalas) => {
-                this.existeEscalaAtiva = (escalas || []).some((e) => String(e.status || '').toLowerCase() === 'ativa');
+                this.bloqueiaEdicaoOrdem = (escalas || []).some((e) => {
+                    const st = String(e.status || '').toLowerCase();
+                    return st === 'ativa' || st === 'rascunho';
+                });
             },
             error: () => {
-                this.existeEscalaAtiva = false;
+                this.bloqueiaEdicaoOrdem = false;
             }
         });
     }
@@ -132,6 +136,11 @@ export class OrdemServidoresComponent implements OnInit {
 
     moverParaBaixo(index: number): void {
         this.mover(index, index + 1);
+    }
+
+    onRowReorder(_event: TableRowReorderEvent): void {
+        this.servidores = [...this.servidores];
+        this.ordemChange.emit(this.servidores);
     }
 
     private mover(from: number, to: number): void {

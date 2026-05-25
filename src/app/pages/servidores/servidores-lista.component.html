@@ -12,6 +12,14 @@
             <button
                 pButton
                 type="button"
+                label="Adicionar Servidor"
+                icon="pi pi-user-plus"
+                [disabled]="carregando || carregandoConjunto !== null"
+                (click)="abrirDialogAdicionar()"
+            ></button>
+            <button
+                pButton
+                type="button"
                 label="Carga desenvolvimento"
                 icon="pi pi-database"
                 severity="warn"
@@ -103,4 +111,34 @@
             </tr>
         </ng-template>
     </p-table>
+
+    <section class="mt-6" *ngIf="aguardandoConclusaoEscala.length > 0">
+        <h2 class="text-lg font-semibold m-0">Aguardando conclusão da escala</h2>
+        <p class="text-color-secondary text-sm m-0 mt-1 mb-3">
+            Estes servidores não participam da ordem global enquanto houver escala em rascunho ou ativa. Após a
+            conclusão da escala e o recálculo da ordem, entram automaticamente como últimos da lista.
+        </p>
+        <p-table [value]="aguardandoConclusaoEscala" responsiveLayout="scroll">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Nome</th>
+                    <th>Login</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-row>
+                <tr>
+                    <td>{{ row.nome }}</td>
+                    <td><span class="font-mono text-sm">{{ row.login }}</span></td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </section>
 </div>
+
+<app-adicionar-servidor-dialog
+    [(visible)]="dialogAdicionarVisible"
+    [escopoInicial]="escopoServidor"
+    [existeEscalaBloqueandoOrdem]="existeEscalaBloqueandoOrdem"
+    [salvando]="salvandoNovoServidor"
+    (salvar)="salvarNovoServidor($event)"
+></app-adicionar-servidor-dialog>

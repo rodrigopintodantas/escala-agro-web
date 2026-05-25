@@ -11,13 +11,23 @@ import { TooltipModule } from 'primeng/tooltip';
 import { AutenticacaoService } from '../../service/autenticacao.service';
 import { CargaEscalaUsuariosResposta, EscalaApiService } from '../../service/escala-api.service';
 import { EscopoServidor, ServidorApiService, ServidorListaItem } from '../../service/servidor-api.service';
+import { AdicionarServidorDialogComponent } from './adicionar-servidor-dialog.component';
 
 type ConjuntoCarga = 'desenvolvimento' | 'producao';
 
 @Component({
     selector: 'app-servidores-lista',
     standalone: true,
-    imports: [CommonModule, TableModule, ToastModule, ButtonModule, ConfirmDialogModule, RippleModule, TooltipModule],
+    imports: [
+        CommonModule,
+        TableModule,
+        ToastModule,
+        ButtonModule,
+        ConfirmDialogModule,
+        RippleModule,
+        TooltipModule,
+        AdicionarServidorDialogComponent
+    ],
     providers: [ConfirmationService],
     templateUrl: './servidores-lista.component.html'
 })
@@ -31,11 +41,15 @@ export class ServidoresListaComponent implements OnInit {
 
     escopoServidor: EscopoServidor = 'veterinario';
     linhas: ServidorListaItem[] = [];
+    aguardandoConclusaoEscala: ServidorListaItem[] = [];
+    existeEscalaBloqueandoOrdem = false;
     carregando = true;
     carregandoConjunto: ConjuntoCarga | null = null;
     excluindoId: number | null = null;
     suspenderId: number | null = null;
     existeEscalaAtiva = false;
+    dialogAdicionarVisible = false;
+    salvandoNovoServidor = false;
 
     get rotuloEscopo(): string {
         return this.escopoServidor === 'tecnico' ? 'técnicos' : 'veterinários';
@@ -57,6 +71,40 @@ export class ServidoresListaComponent implements OnInit {
         this.carregar();
     }
 
+    abrirDialogAdicionar(): void {
+        this.dialogAdicionarVisible = true;
+    }
+
+    salvarNovoServidor(dados: { nome: string; login: string; escopo: EscopoServidor }): void {
+        const rotulo =
+            dados.escopo === 'tecnico' ? 'Técnico' : 'Veterinário';
+        this.salvandoNovoServidor = true;
+        this.api.criar({ nome: dados.nome, login: dados.login }, dados.escopo).subscribe({
+            next: (res) => {
+                this.salvandoNovoServidor = false;
+                this.dialogAdicionarVisible = false;
+                if (this.escopoServidor !== dados.escopo) {
+                    this.escopoServidor = dados.escopo;
+                }
+                const aguardando = !!res.servidor?.aguardandoConclusaoEscala;
+                const detalhe = aguardando
+                    ? 'O servidor foi incluído em Aguardando conclusão da escala e não alterou a ordem global.'
+                    : 'O servidor foi incluído na ordem global como último da lista.';
+                this.msg.add({
+                    severity: 'success',
+                    summary: `${rotulo} adicionado`,
+                    detail: `${detalhe} Senha padrão: ${res.senhaPadrao}.`
+                });
+                this.carregar();
+            },
+            error: (err) => {
+                this.salvandoNovoServidor = false;
+                const det = err?.error?.message || `Não foi possível adicionar o ${rotulo.toLowerCase()}.`;
+                this.msg.add({ severity: 'error', summary: 'Erro', detail: det });
+            }
+        });
+    }
+
     private carregar(): void {
         this.carregando = true;
         this.api.existeEscalaAtiva().subscribe({
@@ -64,7 +112,9 @@ export class ServidoresListaComponent implements OnInit {
                 this.existeEscalaAtiva = ativa;
                 this.api.listar(this.escopoServidor).subscribe({
                     next: (data) => {
-                        this.linhas = data;
+                        this.linhas = data.ativos || [];
+                        this.aguardandoConclusaoEscala = data.aguardandoConclusaoEscala || [];
+                        this.existeEscalaBloqueandoOrdem = !!data.existeEscalaBloqueandoOrdem;
                         this.carregando = false;
                     },
                     error: () => {
@@ -177,6 +227,7 @@ export class ServidoresListaComponent implements OnInit {
             next: (res) => {
                 this.excluindoId = null;
                 this.linhas = this.linhas.filter((x) => x.id !== row.id);
+                this.aguardandoConclusaoEscala = this.aguardandoConclusaoEscala.filter((x) => x.id !== row.id);
                 const rec = res?.recalcEscalas;
                 const detalhe = rec
                     ? `Escalas afetadas: ${rec.escalasAfetadas}; plantões atualizados: ${rec.plantoesAtualizados}.`

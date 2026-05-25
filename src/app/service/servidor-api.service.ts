@@ -11,6 +11,25 @@ export interface ServidorListaItem {
     nome: string;
     login: string;
     suspensoEscala?: boolean;
+    aguardandoOrdemEscopo?: string | null;
+}
+
+export interface ServidorListaResposta {
+    ativos: ServidorListaItem[];
+    aguardandoConclusaoEscala: ServidorListaItem[];
+    existeEscalaBloqueandoOrdem: boolean;
+}
+
+export interface CriarServidorPayload {
+    nome: string;
+    login: string;
+    email?: string;
+    cargo?: string;
+}
+
+export interface CriarServidorResposta {
+    servidor: ServidorListaItem & { aguardandoConclusaoEscala: boolean };
+    senhaPadrao: string;
 }
 
 /** @deprecated Use ServidorListaItem */
@@ -44,16 +63,21 @@ export class ServidorApiService {
     private escalaApi = inject(EscalaApiService);
     private base = `${environment.apiUrl}/servidor`;
 
-    listar(escopo: EscopoServidor): Observable<ServidorListaItem[]> {
+    listar(escopo: EscopoServidor): Observable<ServidorListaResposta> {
         const segmento = escopo === 'tecnico' ? 'tecnicos' : 'veterinarios';
-        return this.http.get<ServidorListaItem[]>(`${this.base}/${segmento}`);
+        return this.http.get<ServidorListaResposta>(`${this.base}/${segmento}`);
     }
 
-    listarVeterinarios(): Observable<ServidorListaItem[]> {
+    criar(payload: CriarServidorPayload, escopo: EscopoServidor): Observable<CriarServidorResposta> {
+        const segmento = escopo === 'tecnico' ? 'tecnicos' : 'veterinarios';
+        return this.http.post<CriarServidorResposta>(`${this.base}/${segmento}`, payload);
+    }
+
+    listarVeterinarios(): Observable<ServidorListaResposta> {
         return this.listar('veterinario');
     }
 
-    listarTecnicos(): Observable<ServidorListaItem[]> {
+    listarTecnicos(): Observable<ServidorListaResposta> {
         return this.listar('tecnico');
     }
 
