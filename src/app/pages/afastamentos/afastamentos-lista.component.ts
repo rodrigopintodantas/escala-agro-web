@@ -10,6 +10,8 @@ import { DialogModule } from 'primeng/dialog';
 import { DropdownModule } from 'primeng/dropdown';
 import { RippleModule } from 'primeng/ripple';
 import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
 import { ToastModule } from 'primeng/toast';
 import {
     AfastamentoApiService,
@@ -36,7 +38,9 @@ export type AfastamentosListaModo = 'admin' | 'veterinario';
         DialogModule,
         CalendarModule,
         DropdownModule,
-        RippleModule
+        RippleModule,
+        TagModule,
+        TooltipModule
     ],
     providers: [ConfirmationService],
     templateUrl: './afastamentos-lista.component.html'
@@ -294,6 +298,45 @@ export class AfastamentosListaComponent implements OnInit {
 
     labelTipo(row: AfastamentoListagem): string {
         return row.tipo?.tipo?.trim() || '—';
+    }
+
+    labelRelevanciaEscala(row: AfastamentoListagem): string {
+        switch (row.relevanciaEscalaAtiva) {
+            case 'relevante':
+                return 'Relevante';
+            case 'irrelevante':
+                return 'Irrelevante';
+            case 'fora_periodo':
+                return 'Fora do período';
+            default:
+                return row.escalaAtivaNome === null ? 'Sem escala aberta' : '—';
+        }
+    }
+
+    severityRelevanciaEscala(row: AfastamentoListagem): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {
+        switch (row.relevanciaEscalaAtiva) {
+            case 'relevante':
+                return 'success';
+            case 'irrelevante':
+                return 'secondary';
+            case 'fora_periodo':
+                return 'info';
+            default:
+                return 'contrast';
+        }
+    }
+
+    tituloRelevanciaEscala(row: AfastamentoListagem): string | null {
+        if (!row.escalaAtivaNome || row.relevanciaEscalaAtiva == null) {
+            return null;
+        }
+        const rotuloStatus =
+            row.escalaReferenciaStatus === 'rascunho' ? 'Escala em rascunho' : 'Escala ativa';
+        return `${rotuloStatus}: ${row.escalaAtivaNome}`;
+    }
+
+    exibirTagRelevanciaEscala(row: AfastamentoListagem): boolean {
+        return row.relevanciaEscalaAtiva != null;
     }
 
     formatoData(iso: string): string {

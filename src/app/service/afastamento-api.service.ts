@@ -20,6 +20,10 @@ export interface RecalculoAfastamentoResumo {
     permutasCanceladas: number;
 }
 
+/** Relevância do afastamento para escala `ativa` ou `rascunho` (somente na listagem admin). */
+export type RelevanciaEscalaAtiva = 'relevante' | 'irrelevante' | 'fora_periodo';
+export type EscalaReferenciaStatus = 'ativa' | 'rascunho';
+
 export interface AfastamentoListagem {
     id: number;
     tipoId: number;
@@ -33,6 +37,10 @@ export interface AfastamentoListagem {
     recalc?: RecalculoAfastamentoResumo;
     /** Único desfazível por classe (vet/técnico): afastamento com `createdAt` mais recente no sistema. */
     desfazerDisponivel?: boolean;
+    /** Presente na listagem admin quando há escala ativa ou em rascunho. */
+    relevanciaEscalaAtiva?: RelevanciaEscalaAtiva | null;
+    escalaAtivaNome?: string | null;
+    escalaReferenciaStatus?: EscalaReferenciaStatus | null;
 }
 
 export interface CriarAfastamentoPayload {

@@ -48,6 +48,7 @@
                 <th>Tipo</th>
                 <th>Data início</th>
                 <th>Data fim</th>
+                <th *ngIf="modo === 'admin'">Escala aberta</th>
                 <th class="text-center" style="width: 10rem">Ações</th>
             </tr>
         </ng-template>
@@ -59,6 +60,18 @@
                 <td>{{ labelTipo(row) }}</td>
                 <td>{{ formatoData(row.dataInicio) }}</td>
                 <td>{{ formatoData(row.dataFim) }}</td>
+                <td *ngIf="modo === 'admin'">
+                    <p-tag
+                        *ngIf="exibirTagRelevanciaEscala(row); else semRelevanciaEscala"
+                        [value]="labelRelevanciaEscala(row)"
+                        [severity]="severityRelevanciaEscala(row)"
+                        [pTooltip]="tituloRelevanciaEscala(row) || undefined"
+                        tooltipPosition="top"
+                    />
+                    <ng-template #semRelevanciaEscala>
+                        <span class="text-color-secondary text-sm">{{ labelRelevanciaEscala(row) }}</span>
+                    </ng-template>
+                </td>
                 <td class="text-center">
                     <button
                         *ngIf="podeDesfazer(row)"
@@ -77,7 +90,7 @@
         </ng-template>
         <ng-template pTemplate="emptymessage">
             <tr>
-                <td [attr.colspan]="modo === 'admin' ? 5 : 4" class="text-center p-4">
+                <td [attr.colspan]="modo === 'admin' ? 6 : 4" class="text-center p-4">
                     {{
                         exibirAbasEscopo && escopoAtivo === 'tecnico'
                             ? 'Nenhum afastamento de técnico encontrado.'
