@@ -69,7 +69,7 @@ export class AfastamentosListaComponent implements OnInit {
     dataInicio: Date | null = null;
     dataFim: Date | null = null;
 
-    desfazendoId: number | null = null;
+    excluindoId: number | null = null;
 
     ngOnInit(): void {
         const m = this.route.snapshot.data['afastamentosModo'];
@@ -90,8 +90,8 @@ export class AfastamentosListaComponent implements OnInit {
             return 'Seus afastamentos registrados.';
         }
         return this.escopoAtivo === 'tecnico'
-            ? 'Afastamentos dos técnicos. Qualquer cadastro pode ser desfeito — a escala é recalculada do zero a partir da ordem inicial.'
-            : 'Afastamentos dos veterinários. Qualquer cadastro pode ser desfeito — a escala é recalculada do zero a partir da ordem inicial.';
+            ? 'Afastamentos dos técnicos. Qualquer cadastro pode ser excluído — a escala é recalculada do zero a partir da ordem inicial.'
+            : 'Afastamentos dos veterinários. Qualquer cadastro pode ser excluído — a escala é recalculada do zero a partir da ordem inicial.';
     }
 
     get afastamentosExibidos(): AfastamentoListagem[] {
@@ -356,32 +356,32 @@ export class AfastamentosListaComponent implements OnInit {
             .map((s) => ({ label: s.nome, value: s.id }));
     }
 
-    podeDesfazer(row: AfastamentoListagem): boolean {
+    podeExcluir(row: AfastamentoListagem): boolean {
         return row.desfazerDisponivel === true;
     }
 
-    confirmarDesfazer(row: AfastamentoListagem): void {
-        if (!this.podeDesfazer(row)) {
+    confirmarExcluir(row: AfastamentoListagem): void {
+        if (!this.podeExcluir(row)) {
             return;
         }
         this.confirm.confirm({
             message:
-                'Desfazer este afastamento? A escala será recalculada considerando os afastamentos restantes (plantões já realizados ficam preservados). Permutas pendentes nas escalas afetadas podem ser canceladas.',
-            header: 'Desfazer afastamento',
+                'Excluir este afastamento? A escala será recalculada considerando os afastamentos restantes (plantões já realizados ficam preservados). Permutas pendentes nas escalas afetadas podem ser canceladas.',
+            header: 'Excluir afastamento',
             icon: 'pi pi-exclamation-triangle',
-            acceptLabel: 'Desfazer',
+            acceptLabel: 'Excluir',
             rejectLabel: 'Cancelar',
             acceptButtonStyleClass: 'p-button-danger',
-            accept: () => this.executarDesfazer(row.id)
+            accept: () => this.executarExcluir(row.id)
         });
     }
 
-    private executarDesfazer(id: number): void {
-        this.desfazendoId = id;
+    private executarExcluir(id: number): void {
+        this.excluindoId = id;
         this.api.desfazer(id).subscribe({
             next: (res) => {
-                this.desfazendoId = null;
-                this.msg.add({ severity: 'success', summary: 'Afastamento', detail: 'Registro removido.' });
+                this.excluindoId = null;
+                this.msg.add({ severity: 'success', summary: 'Afastamento', detail: 'Registro excluído.' });
                 const recalc: RecalculoAfastamentoResumo | undefined = res?.recalc;
                 if (recalc && recalc.escalasAfetadas > 0) {
                     const og =
@@ -397,8 +397,8 @@ export class AfastamentosListaComponent implements OnInit {
                 this.carregarAfastamentos();
             },
             error: (err) => {
-                this.desfazendoId = null;
-                const det = err?.error?.message || 'Não foi possível desfazer.';
+                this.excluindoId = null;
+                const det = err?.error?.message || 'Não foi possível excluir o afastamento.';
                 this.msg.add({ severity: 'error', summary: 'Erro', detail: det });
             }
         });

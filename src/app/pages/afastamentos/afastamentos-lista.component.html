@@ -74,16 +74,16 @@
                 </td>
                 <td class="text-center">
                     <button
-                        *ngIf="podeDesfazer(row)"
+                        *ngIf="podeExcluir(row)"
                         pButton
                         pRipple
                         type="button"
-                        label="Desfazer"
-                        icon="pi pi-undo"
+                        label="Excluir"
+                        icon="pi pi-trash"
                         class="p-button-sm p-button-text p-button-danger"
-                        [loading]="desfazendoId === row.id"
-                        [disabled]="desfazendoId != null && desfazendoId !== row.id"
-                        (click)="confirmarDesfazer(row)"
+                        [loading]="excluindoId === row.id"
+                        [disabled]="excluindoId != null && excluindoId !== row.id"
+                        (click)="confirmarExcluir(row)"
                     ></button>
                 </td>
             </tr>
