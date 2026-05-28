@@ -90,8 +90,8 @@ export class AfastamentosListaComponent implements OnInit {
             return 'Seus afastamentos registrados.';
         }
         return this.escopoAtivo === 'tecnico'
-            ? 'Afastamentos dos técnicos. Só o cadastro mais recente da classe pode ser desfeito.'
-            : 'Afastamentos dos veterinários. Só o cadastro mais recente da classe pode ser desfeito.';
+            ? 'Afastamentos dos técnicos. Qualquer cadastro pode ser desfeito — a escala é recalculada do zero a partir da ordem inicial.'
+            : 'Afastamentos dos veterinários. Qualquer cadastro pode ser desfeito — a escala é recalculada do zero a partir da ordem inicial.';
     }
 
     get afastamentosExibidos(): AfastamentoListagem[] {
@@ -366,7 +366,7 @@ export class AfastamentosListaComponent implements OnInit {
         }
         this.confirm.confirm({
             message:
-                'Desfazer este afastamento? A ordem dos servidores e o calendário das escalas voltam ao estado imediatamente anterior a este cadastro. Permutas pendentes nas escalas afetadas podem ser canceladas.',
+                'Desfazer este afastamento? A escala será recalculada considerando os afastamentos restantes (plantões já realizados ficam preservados). Permutas pendentes nas escalas afetadas podem ser canceladas.',
             header: 'Desfazer afastamento',
             icon: 'pi pi-exclamation-triangle',
             acceptLabel: 'Desfazer',
