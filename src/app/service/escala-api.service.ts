@@ -123,6 +123,17 @@ export interface PermutaListagem {
     destinatarioUsuarioId: number;
     plantaoOrigemId: number | null;
     plantaoDestinoId: number | null;
+    /** Modelo por ordinal: `veterinario` | `tecnico`. */
+    categoria?: string | null;
+    /** N-ésimo plantão (1-based, por data) de cada servidor no calendário base. */
+    ordinalSolicitante?: number | null;
+    ordinalDestinatario?: number | null;
+    /** Data do plantão na criação (apenas exibição/auditoria). */
+    dataOrigemSnapshot?: string | null;
+    dataDestinoSnapshot?: string | null;
+    /** Data atual de cada lado resolvida no calendário base (para permutas ativa/pendente). */
+    dataOrigemAtual?: string | null;
+    dataDestinoAtual?: string | null;
     status: string;
     createdAt: string;
     updatedAt?: string;
@@ -143,6 +154,26 @@ export interface PermutaListagem {
         observacao?: string | null;
         usuario?: { id: number; nome: string; login: string };
     } | null;
+}
+
+/** Plantão base de um servidor para o cadastro de permuta por ordinal. */
+export interface BasePlantaoOrdinal {
+    ordinal: number;
+    dataReferencia: string;
+}
+
+export interface BaseServidorPermuta {
+    usuarioId: number;
+    nome: string | null;
+    login: string | null;
+    categoria: string;
+    plantoes: BasePlantaoOrdinal[];
+}
+
+export interface BasePlantoesPermutaResposta {
+    escalaId: number;
+    veterinarios: BaseServidorPermuta[];
+    tecnicos: BaseServidorPermuta[];
 }
 
 export interface AdicionarDatasExtrasResposta {
@@ -294,5 +325,30 @@ export class EscalaApiService {
         body: { plantaoOrigemId: number; plantaoDestinoId: number }
     ): Observable<unknown> {
         return this.http.post(`${this.base}/${escalaId}/solicitar-permuta`, body);
+    }
+
+    /** Admin: lista os plantões base (por ordinal) de cada servidor para montar a permuta. */
+    listarBasePlantoesPermuta(escalaId: number): Observable<BasePlantoesPermutaResposta> {
+        return this.http.get<BasePlantoesPermutaResposta>(`${this.base}/${escalaId}/base-plantoes-permuta`);
+    }
+
+    /**
+     * Admin: cadastra permuta por ordinal já em vigor (overlay aplicado no recálculo). A troca
+     * "segue o nome" mesmo que a data do plantão mude depois.
+     */
+    criarPermutaAdmin(body: {
+        escalaId: number;
+        categoria: 'veterinario' | 'tecnico';
+        solicitanteUsuarioId: number;
+        ordinalSolicitante: number;
+        destinatarioUsuarioId: number;
+        ordinalDestinatario: number;
+    }): Observable<PermutaListagem> {
+        return this.http.post<PermutaListagem>(`${this.base}/permutas`, body);
+    }
+
+    /** Admin: exclui permuta; se estava ativa, recalcula a escala para reverter a troca. */
+    excluirPermuta(permutaId: number): Observable<{ removido: boolean; id: number }> {
+        return this.http.delete<{ removido: boolean; id: number }>(`${this.base}/permutas/${permutaId}`);
     }
 }

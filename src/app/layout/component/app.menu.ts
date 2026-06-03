@@ -80,6 +80,11 @@ export class AppMenu implements OnInit {
                     routerLink: ['/admin/afastamentos']
                 },
                 {
+                    label: 'Permutas',
+                    icon: 'pi pi-sync',
+                    routerLink: ['/admin/permutas']
+                },
+                {
                     label: 'Servidores',
                     icon: 'pi pi-users',
                     routerLink: ['/admin/servidores']
