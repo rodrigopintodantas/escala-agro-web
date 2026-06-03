@@ -452,6 +452,17 @@ export class VerEscalaComponent implements OnInit {
         };
     }
 
+    plantaoTemPermuta(p: PlantaoDetalhe | null | undefined): boolean {
+        return p?.temPermuta === true;
+    }
+
+    /** Texto da tag: nomes dos dois servidores envolvidos na permuta ativa. */
+    rotuloTagPermuta(p: PlantaoDetalhe | null | undefined): string | null {
+        if (!p?.temPermuta) return null;
+        const rotulo = p.permutaRotulo?.trim();
+        return rotulo || null;
+    }
+
     mensagemAlteracaoPlantao(p: PlantaoDetalhe): string | null {
         if (this.escalaEstaAtiva() && p.usuario?.suspensoEscala) {
             return 'Gestão - Servidor Suspenso da Escala';

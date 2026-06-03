@@ -23,6 +23,10 @@ export interface PlantaoDetalhe {
     categoriaPlantao?: string;
     status: string;
     observacao?: string | null;
+    /** true quando o plantão é um dos lados de uma permuta ativa (overlay por ordinal). */
+    temPermuta?: boolean;
+    /** Ex.: "Ana Silva ↔ Carla Souza" — as duas pessoas da permuta ativa. */
+    permutaRotulo?: string | null;
     usuario?: { id: number; nome: string; login: string; suspensoEscala?: boolean };
 }
 
